@@ -1,0 +1,10 @@
+{
+  "name": "Wood Pecker Burger",
+  "short_name": "Wood Pecker",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#a84435",
+  "background_color": "#303030",
+  "description": "Commande de burgers et boissons Wood Pecker"
+}

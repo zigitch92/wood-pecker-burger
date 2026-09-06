@@ -5,6 +5,32 @@
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#a84435",
-  "background_color": "#303030",
-  "description": "Commande de burgers et boissons Wood Pecker"
+  "background_color": "#a84435",
+  "description": "Commande de burgers et cocktails Wood Pecker - L'art du burger, la vitesse du fast.",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
 }

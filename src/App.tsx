@@ -1,10 +1,6 @@
-import { useState } from "react";
-import imgBurgerClassique from "@/imports/classic-burger.jpg.jpg";
-import imgBurgerChicken from "@/imports/chicken-burger.png.png";
-import imgBurgerSpicy from "@/imports/spicy-burger.png.png";
-import imgJusCarotte from "@/imports/carrot-juice.png.png";
-import imgJusOrange from "@/imports/orange-juice.png.png";
-import imgMojito from "@/imports/mojito-juice.png.png";
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/supabase";
+import { PRODUCTS, type Product, type Category } from "@/menu";
 import logo from "@/imports/logo.png.jpg";
 import couverture from "@/imports/couverture.png.jpeg";
 
@@ -19,20 +15,6 @@ type Screen =
   | "checkout"
   | "confirmation";
 
-type Category = "burgers" | "drinks";
-
-interface Product {
-  id: string;
-  category: Category;
-  name: string;
-  price: number;
-  shortIngredients: string;
-  ingredients: string;
-  imageBg: string;
-  image: string;
-  imagePosition?: string;
-}
-
 interface CartItem {
   product: Product;
   quantity: number;
@@ -45,84 +27,53 @@ interface Order {
   total: number;
   status: "Livrée" | "En livraison" | "Préparation" | "Commande reçue";
   address: string;
+  customerName: string;
 }
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
+interface Theme {
+  primary: string;
+  primaryDark: string;
+  accent: string;
+  gradient: string;
+  card: string;
+  cardAlt: string;
+  text: string;
+  textMuted: string;
+  border: string;
+  headerBg: string;
+}
 
-const PRODUCTS: Product[] = [
-  {
-    id: "burger-classique",
-    category: "burgers",
-    name: "Burger Classique",
-    price: 650,
-    shortIngredients: "Steak haché 180g, cheddar, salade, tomate",
-    ingredients:
-      "Pain burger, steak haché du bœuf (180g), cheddar fondu, salade fraîche, tomate et sauce burger maison.",
-    imageBg: "#3A1A08",
-    image: imgBurgerClassique,
-    imagePosition: "75% center",
-  },
-  {
-    id: "burger-chicken",
-    category: "burgers",
-    name: "Burger Chicken",
-    price: 700,
-    shortIngredients: "Poulet pané, cheddar, salade, sauce curry",
-    ingredients:
-      "Pain burger, poulet pané croustillant, cheddar fondu, salade fraîche, tomate fraîche et sauce curry.",
-    imageBg: "#2A1A08",
-    image: imgBurgerChicken,
-    imagePosition: "75% center",
-  },
-  {
-    id: "burger-spicy",
-    category: "burgers",
-    name: "Burger Spicy",
-    price: 750,
-    shortIngredients: "Steak haché 100g, cheddar, sauce BBQ chilli",
-    ingredients:
-      "Pain burger, steak haché de bœuf (100g), cheddar fondu, salade, tomate, sauce barbecue et chilli.",
-    imageBg: "#2A0808",
-    image: imgBurgerSpicy,
-    imagePosition: "75% center",
-  },
-  {
-    id: "mojito",
-    category: "drinks",
-    name: "Mojito Classique",
-    price: 350,
-    shortIngredients: "Menthe fraîche, citron, eau gazeuse, glace",
-    ingredients:
-      "Menthe fraîche, citron pressé, sucre, eau gazeuse et glace pilée.",
-    imageBg: "#0A2A14",
-    image: imgMojito,
-    imagePosition: "70% center",
-  },
-  {
-    id: "jus-orange",
-    category: "drinks",
-    name: "Jus d'Orange",
-    price: 300,
-    shortIngredients: "Orange fraîche, sucre, glace pilée",
-    ingredients: "Orange fraîche pressée, sucre et glace pilée.",
-    imageBg: "#2A1408",
-    image: imgJusOrange,
-    imagePosition: "70% center",
-  },
-  {
-    id: "jus-carotte",
-    category: "drinks",
-    name: "Jus de Carotte",
-    price: 300,
-    shortIngredients: "Carotte fraîche, sauce carotte, glace pilée",
-    ingredients: "Carotte fraîche, jus de carotte et glace pilée.",
-    imageBg: "#2A1208",
-    image: imgJusCarotte,
-    imagePosition: "70% center",
-  },
-];
+const BURGER_THEME: Theme = {
+  primary: "#c85a32",
+  primaryDark: "#a84435",
+  accent: "#e8a838",
+  gradient: "linear-gradient(135deg, #d4b17d 0%, #a84435 100%)",
+  card: "#f8ecd8",
+  cardAlt: "#fffaf2",
+  text: "#33251f",
+  textMuted: "#8b7768",
+  border: "#e3d5c3",
+  headerBg: "#f8ecd8",
+};
 
-// ─── Image Placeholder ────────────────────────────────────────────────────────
+const COCKTAIL_THEME: Theme = {
+  primary: "#2d7a4f",
+  primaryDark: "#1f5e3a",
+  accent: "#d4b838",
+  gradient: "linear-gradient(135deg, #c5d99a 0%, #2d7a4f 100%)",
+  card: "#e8f0d8",
+  cardAlt: "#f4f8e8",
+  text: "#1a3320",
+  textMuted: "#5a7a62",
+  border: "#c5d9b0",
+  headerBg: "#e8f0d8",
+};
+
+function themeFor(category: Category): Theme {
+  return category === "drinks" ? COCKTAIL_THEME : BURGER_THEME;
+}
+
+// ─── Product Image ────────────────────────────────────────────────────────────
 
 function ProductImage({
   product,
@@ -133,7 +84,7 @@ function ProductImage({
 }) {
   const heights: Record<string, string> = {
     sm: "h-20",
-     md: "h-32",
+    md: "h-32",
     lg: "h-64",
   };
   return (
@@ -231,17 +182,19 @@ function ProductCard({
   onOpen,
   isFav,
   onFav,
+  theme,
 }: {
   product: Product;
   onAdd: () => void;
   onOpen: () => void;
   isFav: boolean;
   onFav: () => void;
+  theme: Theme;
 }) {
   return (
     <div
       className="rounded-2xl overflow-hidden flex-shrink-0"
-       style={{ backgroundColor: "#f8ecd8", width: "220px" }}
+      style={{ backgroundColor: theme.card, width: "220px" }}
     >
       <div className="relative cursor-pointer" onClick={onOpen}>
         <ProductImage product={product} size="md" />
@@ -259,24 +212,24 @@ function ProductCard({
       <div className="p-3">
         <p
           className="font-bold text-sm leading-tight"
-          style={{ color: "#33251f" }}
+          style={{ color: theme.text }}
         >
           {product.name}
         </p>
         <p
           className="text-[11px] mt-0.5 line-clamp-2 leading-snug"
-          style={{ color: "#8b7768" }}
+          style={{ color: theme.textMuted }}
         >
           {product.shortIngredients}
         </p>
         <div className="flex items-center justify-between mt-3">
-          <span className="font-bold text-sm" style={{ color: "#c85a32" }}>
+          <span className="font-bold text-sm" style={{ color: theme.primary }}>
             {product.price} DA
           </span>
           <button
             onClick={onAdd}
-            className="text-white text-xs font-bold px-3 py-1.5 rounded-xl"
-            style={{ backgroundColor: "#c85a32" }}
+            className="text-white text-xs font-bold px-3 py-1.5 rounded-xl active:scale-95 transition-transform"
+            style={{ backgroundColor: theme.primary }}
           >
             + Ajouter
           </button>
@@ -295,8 +248,6 @@ function HomeScreen({
   onOpenProduct,
   favs,
   onToggleFav,
-  searchQuery,
-  onSearch,
 }: {
   onNav: (s: Screen) => void;
   cart: CartItem[];
@@ -304,32 +255,28 @@ function HomeScreen({
   onOpenProduct: (p: Product) => void;
   favs: Set<string>;
   onToggleFav: (id: string) => void;
-  searchQuery: string;
-  onSearch: (q: string) => void;
 }) {
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
   const [activeCategory, setActiveCategory] = useState<Category>("burgers");
+  const theme = themeFor(activeCategory);
 
   const burgers = PRODUCTS.filter((p) => p.category === "burgers");
   const drinks = PRODUCTS.filter((p) => p.category === "drinks");
 
-  const filtered = (activeCategory === "burgers" ? burgers : drinks).filter(
-    (p) =>
-      searchQuery === "" ||
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.ingredients.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const visible = activeCategory === "burgers" ? burgers : drinks;
 
   return (
     <div
       className="flex flex-col min-h-full pb-20"
-      style={{ background: "linear-gradient(135deg, #d4b17d 0%, #a84435 100%)" }}
+      style={{ background: theme.gradient }}
     >
       {/* Header */}
       <div className="px-5 pt-12 pb-5 flex items-center justify-between">
-        {/* Logo placeholder */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden" style={{ backgroundColor: "#f8ecd8" }}>
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
+            style={{ backgroundColor: theme.headerBg }}
+          >
             <img
               src={logo}
               alt="Wood Pecker Burger"
@@ -339,26 +286,29 @@ function HomeScreen({
           <div>
             <p
               className="font-black text-base tracking-wider leading-none"
-              style={{ color: "#33251f" }}
+              style={{ color: theme.text }}
             >
               WOOD PECKER
             </p>
-            <p className="text-[10px] tracking-widest" style={{ color: "#c85a32" }}>
+            <p
+              className="text-[10px] tracking-widest"
+              style={{ color: theme.primary }}
+            >
               BURGER
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <button
-            className="w-9 h-9 rounded-xl flex items-center justify-center relative"
-            style={{ backgroundColor: "#f8ecd8" }}
+            className="w-9 h-9 rounded-xl flex items-center justify-center relative active:scale-90 transition-transform"
+            style={{ backgroundColor: theme.headerBg }}
             onClick={() => onNav("cart")}
           >
             <span className="text-base">🛒</span>
             {cartCount > 0 && (
               <span
                 className="absolute -top-1 -right-1 text-[9px] font-black text-white rounded-full w-4 h-4 flex items-center justify-center"
-                style={{ backgroundColor: "#c85a32" }}
+                style={{ backgroundColor: theme.primary }}
               >
                 {cartCount}
               </span>
@@ -367,23 +317,38 @@ function HomeScreen({
         </div>
       </div>
 
+      {/* Slogan */}
+      <div className="px-5 mb-4 text-center">
+        <p
+          className="font-bold text-lg leading-tight italic"
+          style={{ color: theme.text }}
+        >
+          "L'art du burger, la vitesse du fast."
+        </p>
+      </div>
+
       {/* Hero Banner */}
       <div
         className="mx-5 rounded-2xl mb-5 relative overflow-hidden"
-        style={{ backgroundColor: "#f8ecd8", minHeight: "125px" }}
+        style={{ backgroundColor: theme.card, minHeight: "125px" }}
       >
-        {/* Background food photo */}
         <img
           src={couverture}
           alt="Couverture Wood Pecker Burger"
           className="absolute inset-0 w-full h-full object-cover"
           style={{ objectPosition: "center", opacity: 0.85 }}
         />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(20,12,10,0.72), rgba(20,12,10,0.04) 70%)" }} />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to top, rgba(20,12,10,0.72), rgba(20,12,10,0.04) 70%)",
+          }}
+        />
         <div className="absolute bottom-4 left-5 z-10">
           <button
-            className="text-white text-xs font-bold px-4 py-2 rounded-xl"
-            style={{ backgroundColor: "#c85a32" }}
+            className="text-white text-xs font-bold px-4 py-2 rounded-xl active:scale-95 transition-transform"
+            style={{ backgroundColor: theme.primary }}
             onClick={() => onNav("menu")}
           >
             Voir le menu →
@@ -395,34 +360,36 @@ function HomeScreen({
       <div className="mx-5 mb-5 flex gap-3">
         <button
           onClick={() => setActiveCategory("burgers")}
-          className="min-w-0 flex-1 flex items-center justify-center gap-1 py-3.5 rounded-2xl font-bold text-xs transition-all"
+          className="min-w-0 flex-1 flex items-center justify-center gap-1 py-3.5 rounded-2xl font-bold text-xs transition-all active:scale-95"
           style={{
-            backgroundColor: activeCategory === "burgers" ? "#c85a32" : "#f8ecd8",
-            color: activeCategory === "burgers" ? "#fff" : "#8b7768",
+            backgroundColor:
+              activeCategory === "burgers" ? theme.primary : theme.card,
+            color: activeCategory === "burgers" ? "#fff" : theme.textMuted,
           }}
         >
           🍔 <span>NOS BURGERS</span>
         </button>
         <button
           onClick={() => setActiveCategory("drinks")}
-          className="min-w-0 flex-1 flex items-center justify-center gap-1 py-3.5 rounded-2xl font-bold text-xs transition-all"
+          className="min-w-0 flex-1 flex items-center justify-center gap-1 py-3.5 rounded-2xl font-bold text-xs transition-all active:scale-95"
           style={{
-            backgroundColor: activeCategory === "drinks" ? "#c85a32" : "#f8ecd8",
-            color: activeCategory === "drinks" ? "#fff" : "#8b7768",
+            backgroundColor:
+              activeCategory === "drinks" ? theme.primary : theme.card,
+            color: activeCategory === "drinks" ? "#fff" : theme.textMuted,
           }}
         >
-          🥤 <span>NOS BOISSONS</span>
+          🥤 <span>NOS COCKTAILS</span>
         </button>
       </div>
 
       {/* Products horizontal scroll */}
       <div className="px-5 mb-2 flex items-center justify-between">
-        <p className="font-bold text-base" style={{ color: "#33251f" }}>
-          {activeCategory === "burgers" ? "Nos Burgers" : "Nos Boissons"}
+        <p className="font-bold text-base" style={{ color: theme.text }}>
+          {activeCategory === "burgers" ? "Nos Burgers" : "Nos Cocktails"}
         </p>
         <button
           className="text-xs font-semibold"
-          style={{ color: "#c85a32" }}
+          style={{ color: theme.primary }}
           onClick={() => onNav("menu")}
         >
           Tout voir →
@@ -432,7 +399,7 @@ function HomeScreen({
         className="flex gap-4 overflow-x-auto px-5 pb-2"
         style={{ scrollbarWidth: "none" }}
       >
-        {filtered.map((product) => (
+        {visible.map((product) => (
           <ProductCard
             key={product.id}
             product={product}
@@ -440,29 +407,29 @@ function HomeScreen({
             onOpen={() => onOpenProduct(product)}
             isFav={favs.has(product.id)}
             onFav={() => onToggleFav(product.id)}
+            theme={theme}
           />
         ))}
-        {filtered.length === 0 && (
-          <p className="text-sm py-8 px-2" style={{ color: "#505050" }}>
-            Aucun résultat trouvé.
-          </p>
-        )}
       </div>
 
-      {/* Promo Banner */}
+      {/* Order CTA */}
       <div
-        className="mx-5 mt-6 rounded-2xl p-4 flex items-center gap-4"
-        style={{ backgroundColor: "#f8ecd8" }}
+        className="mx-5 mt-6 rounded-2xl p-4 flex items-center gap-4 active:scale-[0.98] transition-transform cursor-pointer"
+        style={{ backgroundColor: theme.card }}
+        onClick={() => onNav("cart")}
       >
         <span className="text-3xl">🔥</span>
-        <div>
-          <p className="font-bold text-sm" style={{ color: "#33251f" }}>
+        <div className="flex-1">
+          <p className="font-bold text-sm" style={{ color: theme.text }}>
             Commandez maintenant
           </p>
-          <p className="text-xs" style={{ color: "#8b7768" }}>
+          <p className="text-xs" style={{ color: theme.textMuted }}>
             Livraison rapide, paiement à la livraison
           </p>
         </div>
+        <span className="font-bold text-lg" style={{ color: theme.primary }}>
+          →
+        </span>
       </div>
     </div>
   );
@@ -482,40 +449,47 @@ function MenuScreen({
   onToggleFav: (id: string) => void;
 }) {
   const [activeCategory, setActiveCategory] = useState<Category>("burgers");
+  const theme = themeFor(activeCategory);
   const filtered = PRODUCTS.filter((p) => p.category === activeCategory);
 
   return (
     <div
       className="flex flex-col min-h-full pb-20"
-      style={{ background: "linear-gradient(135deg, #d4b17d 0%, #a84435 100%)" }}
+      style={{ background: theme.gradient }}
     >
       <div className="px-5 pt-12 pb-5">
-        <p className="font-black text-2xl" style={{ color: "#33251f" }}>
-          Notre Menu
+        <p className="font-black text-2xl" style={{ color: theme.text }}>
+          {activeCategory === "burgers" ? "Nos Burgers" : "Nos Cocktails"}
         </p>
-        <p className="text-sm mt-1" style={{ color: "#8b7768" }}>
-          Choisissez votre plaisir
+        <p className="text-sm mt-1" style={{ color: theme.textMuted }}>
+          {activeCategory === "burgers"
+            ? "L'art du burger"
+            : "Fraîcheur et saveurs"}
         </p>
       </div>
 
       {/* Tabs */}
       <div
         className="mx-5 mb-6 p-1 rounded-2xl flex"
-        style={{ backgroundColor: "#f8ecd8" }}
+        style={{ backgroundColor: theme.card }}
       >
-        {(["burgers", "drinks"] as Category[]).map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className="flex-1 py-2.5 rounded-xl font-bold text-sm transition-all"
-            style={{
-              backgroundColor: activeCategory === cat ? "#c85a32" : "transparent",
-              color: activeCategory === cat ? "#fff" : "#8b7768",
-            }}
-          >
-            {cat === "burgers" ? "🍔 Burgers" : "🥤 Boissons"}
-          </button>
-        ))}
+        {(["burgers", "drinks"] as Category[]).map((cat) => {
+          const catTheme = themeFor(cat);
+          return (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className="flex-1 py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95"
+              style={{
+                backgroundColor:
+                  activeCategory === cat ? catTheme.primary : "transparent",
+                color: activeCategory === cat ? "#fff" : theme.textMuted,
+              }}
+            >
+              {cat === "burgers" ? "🍔 Burgers" : "🥤 Cocktails"}
+            </button>
+          );
+        })}
       </div>
 
       {/* Product List */}
@@ -524,20 +498,25 @@ function MenuScreen({
           <div
             key={product.id}
             className="rounded-2xl overflow-hidden flex flex-col gap-3 p-3"
-            style={{ backgroundColor: "#f8ecd8" }}
+            style={{ backgroundColor: theme.card }}
           >
             <div
-              className="cursor-pointer w-full h-32 rounded-xl overflow-hidden"
+              className="cursor-pointer w-full h-32 rounded-xl overflow-hidden active:scale-[0.98] transition-transform"
               style={{ backgroundColor: product.imageBg }}
               onClick={() => onOpenProduct(product)}
             >
-              <img src={product.image} alt={product.name} className="w-full h-full object-contain bg-black" style={{ objectPosition: "center" }} />
+              <img
+                src={product.image}
+                alt={product.name}
+                className="w-full h-full object-contain bg-black"
+                style={{ objectPosition: "center" }}
+              />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between">
                 <p
                   className="font-bold text-sm"
-                  style={{ color: "#33251f" }}
+                  style={{ color: theme.text }}
                 >
                   {product.name}
                 </p>
@@ -550,18 +529,21 @@ function MenuScreen({
               </div>
               <p
                 className="text-xs mt-0.5 line-clamp-2"
-                style={{ color: "#8b7768" }}
+                style={{ color: theme.textMuted }}
               >
                 {product.shortIngredients}
               </p>
               <div className="flex items-center justify-between mt-3">
-                <span className="font-bold text-sm" style={{ color: "#c85a32" }}>
+                <span
+                  className="font-bold text-sm"
+                  style={{ color: theme.primary }}
+                >
                   {product.price} DA
                 </span>
                 <button
                   onClick={() => onAddToCart(product)}
-                  className="text-white text-xs font-bold px-3 py-1.5 rounded-xl"
-                  style={{ backgroundColor: "#c85a32" }}
+                  className="text-white text-xs font-bold px-3 py-1.5 rounded-xl active:scale-95 transition-transform"
+                  style={{ backgroundColor: theme.primary }}
                 >
                   + Ajouter
                 </button>
@@ -586,22 +568,23 @@ function ProductDetailScreen({
   onAddToCart: (p: Product, qty: number) => void;
 }) {
   const [qty, setQty] = useState(1);
+  const theme = themeFor(product.category);
 
   return (
     <div
       className="flex flex-col min-h-full pb-24"
-      style={{ background: "linear-gradient(135deg, #d4b17d 0%, #a84435 100%)" }}
+      style={{ background: theme.gradient }}
     >
       {/* Back button */}
       <div className="px-5 pt-12 pb-4 flex items-center gap-3">
         <button
           onClick={onBack}
-          className="w-9 h-9 rounded-xl flex items-center justify-center"
-          style={{ backgroundColor: "#f8ecd8" }}
+          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
+          style={{ backgroundColor: theme.card }}
         >
-          <span style={{ color: "#33251f" }}>←</span>
+          <span style={{ color: theme.text }}>←</span>
         </button>
-        <p className="font-bold text-base" style={{ color: "#33251f" }}>
+        <p className="font-bold text-base" style={{ color: theme.text }}>
           Détail du produit
         </p>
       </div>
@@ -614,10 +597,16 @@ function ProductDetailScreen({
       <div className="px-5">
         {/* Name + Price */}
         <div className="flex items-start justify-between mb-3">
-          <p className="font-black text-2xl flex-1" style={{ color: "#33251f" }}>
+          <p
+            className="font-black text-2xl flex-1"
+            style={{ color: theme.text }}
+          >
             {product.name}
           </p>
-          <p className="font-black text-xl ml-4" style={{ color: "#c85a32" }}>
+          <p
+            className="font-black text-xl ml-4"
+            style={{ color: theme.primary }}
+          >
             {product.price} DA
           </p>
         </div>
@@ -625,15 +614,18 @@ function ProductDetailScreen({
         {/* Ingredients */}
         <div
           className="rounded-2xl p-4 mb-5"
-          style={{ backgroundColor: "#f8ecd8" }}
+          style={{ backgroundColor: theme.card }}
         >
           <p
             className="text-xs font-bold tracking-widest uppercase mb-2"
-            style={{ color: "#c85a32" }}
+            style={{ color: theme.primary }}
           >
             Ingrédients
           </p>
-          <p className="text-sm leading-relaxed" style={{ color: "#6f5b4d" }}>
+          <p
+            className="text-sm leading-relaxed"
+            style={{ color: theme.textMuted }}
+          >
             {product.ingredients}
           </p>
         </div>
@@ -642,11 +634,11 @@ function ProductDetailScreen({
         {product.category === "burgers" && (
           <div
             className="rounded-2xl p-4 mb-5 border"
-            style={{ borderColor: "#e3d5c3", backgroundColor: "#f1e5d3" }}
+            style={{ borderColor: theme.border, backgroundColor: theme.cardAlt }}
           >
             <p
               className="text-xs font-bold tracking-widest uppercase mb-3"
-              style={{ color: "#8b7768" }}
+              style={{ color: theme.textMuted }}
             >
               Personnalisation
             </p>
@@ -661,12 +653,18 @@ function ProductDetailScreen({
               <div
                 key={opt}
                 className="flex items-center justify-between py-2 border-b last:border-0"
-                style={{ borderColor: "#e3d5c3" }}
+                style={{ borderColor: theme.border }}
               >
-                <p className="text-sm" style={{ color: "#6f5b4d" }}>
+                <p className="text-sm" style={{ color: theme.textMuted }}>
                   {opt}
                 </p>
-                <span className="text-xs px-2 py-0.5 rounded-full border" style={{ borderColor: "#e3d5c3", color: "#8b7768" }}>
+                <span
+                  className="text-xs px-2 py-0.5 rounded-full border"
+                  style={{
+                    borderColor: theme.border,
+                    color: theme.textMuted,
+                  }}
+                >
                   Bientôt
                 </span>
               </div>
@@ -676,27 +674,33 @@ function ProductDetailScreen({
 
         {/* Quantity selector */}
         <div className="flex items-center justify-between mb-6">
-          <p className="font-bold text-sm" style={{ color: "#F5F5F5" }}>
+          <p className="font-bold text-sm" style={{ color: theme.text }}>
             Quantité
           </p>
           <div
             className="flex items-center gap-4 px-4 py-2 rounded-2xl"
-            style={{ backgroundColor: "#1C1C1C" }}
+            style={{ backgroundColor: theme.card }}
           >
             <button
               onClick={() => setQty(Math.max(1, qty - 1))}
-              className="w-7 h-7 rounded-xl flex items-center justify-center font-bold"
-              style={{ backgroundColor: qty === 1 ? "#2A2A2A" : "#FF5A1F", color: "#fff" }}
+              className="w-7 h-7 rounded-xl flex items-center justify-center font-bold active:scale-90 transition-transform"
+              style={{
+                backgroundColor: qty === 1 ? theme.border : theme.primary,
+                color: "#fff",
+              }}
             >
               −
             </button>
-            <span className="font-bold text-base w-4 text-center" style={{ color: "#F5F5F5" }}>
+            <span
+              className="font-bold text-base w-4 text-center"
+              style={{ color: theme.text }}
+            >
               {qty}
             </span>
             <button
               onClick={() => setQty(qty + 1)}
-              className="w-7 h-7 rounded-xl flex items-center justify-center font-bold text-white"
-              style={{ backgroundColor: "#FF5A1F" }}
+              className="w-7 h-7 rounded-xl flex items-center justify-center font-bold text-white active:scale-90 transition-transform"
+              style={{ backgroundColor: theme.primary }}
             >
               +
             </button>
@@ -705,11 +709,17 @@ function ProductDetailScreen({
       </div>
 
       {/* Add to cart button */}
-      <div className="absolute bottom-0 left-0 right-0 px-5 pb-8 pt-4" style={{ background: "linear-gradient(135deg, #d4b17d 0%, #a84435 100%)", borderTop: "1px solid #b8755e" }}>
+      <div
+        className="absolute bottom-0 left-0 right-0 px-5 pb-8 pt-4"
+        style={{
+          background: theme.gradient,
+          borderTop: `1px solid ${theme.border}`,
+        }}
+      >
         <button
           onClick={() => onAddToCart(product, qty)}
-          className="w-full py-4 rounded-2xl text-white font-bold text-base"
-          style={{ backgroundColor: "#c85a32" }}
+          className="w-full py-4 rounded-2xl text-white font-bold text-base active:scale-[0.98] transition-transform"
+          style={{ backgroundColor: theme.primary }}
         >
           Ajouter au panier • {product.price * qty} DA
         </button>
@@ -731,6 +741,7 @@ function CartScreen({
   onRemove: (id: string) => void;
   onCheckout: () => void;
 }) {
+  const theme = BURGER_THEME;
   const subtotal = cart.reduce((s, i) => s + i.product.price * i.quantity, 0);
   const delivery = cart.length > 0 ? 150 : 0;
   const total = subtotal + delivery;
@@ -738,13 +749,13 @@ function CartScreen({
   return (
     <div
       className="flex flex-col min-h-full pb-20"
-      style={{ background: "linear-gradient(135deg, #d4b17d 0%, #a84435 100%)" }}
+      style={{ background: theme.gradient }}
     >
       <div className="px-5 pt-12 pb-5">
-        <p className="font-black text-2xl" style={{ color: "#33251f" }}>
+        <p className="font-black text-2xl" style={{ color: theme.text }}>
           Mon Panier
         </p>
-        <p className="text-sm mt-1" style={{ color: "#8b7768" }}>
+        <p className="text-sm mt-1" style={{ color: theme.textMuted }}>
           {cart.length === 0
             ? "Votre panier est vide"
             : `${cart.reduce((s, i) => s + i.quantity, 0)} article(s)`}
@@ -754,8 +765,10 @@ function CartScreen({
       {cart.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center gap-4 px-5">
           <span className="text-6xl opacity-20">🛒</span>
-          <p className="text-center" style={{ color: "#505050" }}>
-            Votre panier est vide.{"\n"}Ajoutez des produits pour commander.
+          <p className="text-center" style={{ color: theme.textMuted }}>
+            Votre panier est vide.
+            <br />
+            Ajoutez des produits pour commander.
           </p>
         </div>
       ) : (
@@ -765,19 +778,29 @@ function CartScreen({
               <div
                 key={item.product.id}
                 className="rounded-2xl p-3 flex items-center gap-3"
-                style={{ backgroundColor: "#fffaf2" }}
+                style={{ backgroundColor: theme.cardAlt }}
               >
                 <div
                   className="w-16 h-16 rounded-xl flex-shrink-0 overflow-hidden"
                   style={{ backgroundColor: item.product.imageBg }}
                 >
-                  <img src={item.product.image} alt={item.product.name} className="w-full h-full object-cover" style={{ objectPosition: item.product.imagePosition ?? "70% center" }} />
+                  <img
+                    src={item.product.image}
+                    alt={item.product.name}
+                    className="w-full h-full object-cover"
+                    style={{
+                      objectPosition: item.product.imagePosition ?? "70% center",
+                    }}
+                  />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm" style={{ color: "#33251f" }}>
+                  <p
+                    className="font-bold text-sm"
+                    style={{ color: theme.text }}
+                  >
                     {item.product.name}
                   </p>
-                  <p className="text-xs mt-0.5" style={{ color: "#8b7768" }}>
+                  <p className="text-xs mt-0.5" style={{ color: theme.textMuted }}>
                     {item.product.price} DA / unité
                   </p>
                   <div className="flex items-center gap-3 mt-2">
@@ -787,18 +810,26 @@ function CartScreen({
                           ? onRemove(item.product.id)
                           : onUpdateQty(item.product.id, item.quantity - 1)
                       }
-                      className="w-6 h-6 rounded-lg flex items-center justify-center font-bold text-sm"
-                      style={{ backgroundColor: "#2A2A2A", color: "#F5F5F5" }}
+                      className="w-6 h-6 rounded-lg flex items-center justify-center font-bold text-sm active:scale-90 transition-transform"
+                      style={{
+                        backgroundColor: theme.border,
+                        color: theme.text,
+                      }}
                     >
                       −
                     </button>
-                    <span className="font-bold text-sm" style={{ color: "#F5F5F5" }}>
+                    <span
+                      className="font-bold text-sm"
+                      style={{ color: theme.text }}
+                    >
                       {item.quantity}
                     </span>
                     <button
-                      onClick={() => onUpdateQty(item.product.id, item.quantity + 1)}
-                      className="w-6 h-6 rounded-lg flex items-center justify-center font-bold text-sm text-white"
-                      style={{ backgroundColor: "#c85a32" }}
+                      onClick={() =>
+                        onUpdateQty(item.product.id, item.quantity + 1)
+                      }
+                      className="w-6 h-6 rounded-lg flex items-center justify-center font-bold text-sm text-white active:scale-90 transition-transform"
+                      style={{ backgroundColor: theme.primary }}
                     >
                       +
                     </button>
@@ -807,12 +838,15 @@ function CartScreen({
                 <div className="flex flex-col items-end gap-2">
                   <button
                     onClick={() => onRemove(item.product.id)}
-                    className="text-xs px-2 py-1 rounded-lg"
-                    style={{ backgroundColor: "#2A2A2A", color: "#707070" }}
+                    className="text-xs px-2 py-1 rounded-lg active:scale-90 transition-transform"
+                    style={{ backgroundColor: theme.border, color: theme.textMuted }}
                   >
                     ✕
                   </button>
-                  <p className="font-bold text-sm" style={{ color: "#c85a32" }}>
+                  <p
+                    className="font-bold text-sm"
+                    style={{ color: theme.primary }}
+                  >
                     {item.product.price * item.quantity} DA
                   </p>
                 </div>
@@ -823,32 +857,35 @@ function CartScreen({
           {/* Summary */}
           <div
             className="mx-5 mt-5 rounded-2xl p-4"
-            style={{ backgroundColor: "#fffaf2" }}
+            style={{ backgroundColor: theme.cardAlt }}
           >
             <div className="flex justify-between py-2">
-              <p className="text-sm" style={{ color: "#909090" }}>
+              <p className="text-sm" style={{ color: theme.textMuted }}>
                 Sous-total
               </p>
-              <p className="text-sm font-semibold" style={{ color: "#F5F5F5" }}>
+              <p className="text-sm font-semibold" style={{ color: theme.text }}>
                 {subtotal} DA
               </p>
             </div>
             <div
               className="flex justify-between py-2 border-b"
-              style={{ borderColor: "#2E2E2E" }}
+              style={{ borderColor: theme.border }}
             >
-              <p className="text-sm" style={{ color: "#909090" }}>
+              <p className="text-sm" style={{ color: theme.textMuted }}>
                 Livraison
               </p>
-              <p className="text-sm font-semibold" style={{ color: "#F5F5F5" }}>
+              <p className="text-sm font-semibold" style={{ color: theme.text }}>
                 {delivery} DA
               </p>
             </div>
             <div className="flex justify-between pt-3">
-              <p className="font-bold" style={{ color: "#F5F5F5" }}>
+              <p className="font-bold" style={{ color: theme.text }}>
                 TOTAL
               </p>
-              <p className="font-black text-lg" style={{ color: "#c85a32" }}>
+              <p
+                className="font-black text-lg"
+                style={{ color: theme.primary }}
+              >
                 {total} DA
               </p>
             </div>
@@ -858,8 +895,8 @@ function CartScreen({
           <div className="px-5 mt-5">
             <button
               onClick={onCheckout}
-              className="w-full py-4 rounded-2xl text-white font-bold text-base"
-              style={{ backgroundColor: "#c85a32" }}
+              className="w-full py-4 rounded-2xl text-white font-bold text-base active:scale-[0.98] transition-transform"
+              style={{ backgroundColor: theme.primary }}
             >
               Commander →
             </button>
@@ -876,11 +913,21 @@ function CheckoutScreen({
   cart,
   onConfirm,
   onBack,
+  submitting,
 }: {
   cart: CartItem[];
-  onConfirm: (info: { nom: string; prenom: string; tel: string; address: string; deliveryMode: string; paymentMode: string }) => void;
+  onConfirm: (info: {
+    nom: string;
+    prenom: string;
+    tel: string;
+    address: string;
+    deliveryMode: string;
+    paymentMode: string;
+  }) => void;
   onBack: () => void;
+  submitting: boolean;
 }) {
+  const theme = BURGER_THEME;
   const [nom, setNom] = useState("");
   const [prenom, setPrenom] = useState("");
   const [tel, setTel] = useState("");
@@ -893,38 +940,42 @@ function CheckoutScreen({
   const total = subtotal + delivery;
 
   const fieldStyle = {
-    backgroundColor: "#fffaf2",
-    color: "#33251f",
-    border: "1px solid #e3d5c3",
+    backgroundColor: theme.cardAlt,
+    color: theme.text,
+    border: `1px solid ${theme.border}`,
   };
+
+  const canSubmit =
+    nom.trim() !== "" &&
+    prenom.trim() !== "" &&
+    tel.trim() !== "" &&
+    (deliveryMode === "retrait" || address.trim() !== "") &&
+    !submitting;
 
   return (
     <div
       className="flex flex-col min-h-full pb-28"
-      style={{ background: "linear-gradient(135deg, #d4b17d 0%, #a84435 100%)" }}
+      style={{ background: theme.gradient }}
     >
       <div className="px-5 pt-12 pb-5 flex items-center gap-3">
         <button
           onClick={onBack}
-          className="w-9 h-9 rounded-xl flex items-center justify-center"
-          style={{ backgroundColor: "#fffaf2" }}
+          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
+          style={{ backgroundColor: theme.cardAlt }}
         >
-          <span style={{ color: "#33251f" }}>←</span>
+          <span style={{ color: theme.text }}>←</span>
         </button>
-        <p className="font-black text-2xl" style={{ color: "#33251f" }}>
+        <p className="font-black text-2xl" style={{ color: theme.text }}>
           Commander
         </p>
       </div>
 
       <div className="px-5 flex flex-col gap-5">
         {/* Customer info */}
-        <div
-          className="rounded-2xl p-4"
-          style={{ backgroundColor: "#fffaf2" }}
-        >
+        <div className="rounded-2xl p-4" style={{ backgroundColor: theme.cardAlt }}>
           <p
             className="text-xs font-bold tracking-widest uppercase mb-4"
-            style={{ color: "#c85a32" }}
+            style={{ color: theme.primary }}
           >
             Vos informations
           </p>
@@ -965,8 +1016,11 @@ function CheckoutScreen({
         </div>
 
         {/* Delivery mode */}
-        <div className="rounded-2xl p-4" style={{ backgroundColor: "#fffaf2" }}>
-          <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color: "#FF5A1F" }}>
+        <div className="rounded-2xl p-4" style={{ backgroundColor: theme.cardAlt }}>
+          <p
+            className="text-xs font-bold tracking-widest uppercase mb-4"
+            style={{ color: theme.primary }}
+          >
             Mode de livraison
           </p>
           {[
@@ -976,23 +1030,35 @@ function CheckoutScreen({
             <button
               key={opt.id}
               onClick={() => setDeliveryMode(opt.id)}
-              className="w-full flex items-center gap-3 p-3 rounded-xl mb-2 last:mb-0"
+              className="w-full flex items-center gap-3 p-3 rounded-xl mb-2 last:mb-0 active:scale-[0.98] transition-transform"
               style={{
-                backgroundColor: deliveryMode === opt.id ? "rgba(255,90,31,0.15)" : "#242424",
-                border: `1px solid ${deliveryMode === opt.id ? "#FF5A1F" : "#2E2E2E"}`,
+                backgroundColor:
+                  deliveryMode === opt.id
+                    ? `${theme.primary}22`
+                    : theme.card,
+                border: `1px solid ${deliveryMode === opt.id ? theme.primary : theme.border}`,
               }}
             >
               <span className="text-xl">{opt.icon}</span>
               <div className="flex-1 text-left">
-                <p className="text-sm font-semibold" style={{ color: "#F5F5F5" }}>{opt.label}</p>
-                <p className="text-xs" style={{ color: "#707070" }}>{opt.sub}</p>
+                <p className="text-sm font-semibold" style={{ color: theme.text }}>
+                  {opt.label}
+                </p>
+                <p className="text-xs" style={{ color: theme.textMuted }}>
+                  {opt.sub}
+                </p>
               </div>
               <div
                 className="w-5 h-5 rounded-full border-2 flex items-center justify-center"
-                style={{ borderColor: deliveryMode === opt.id ? "#FF5A1F" : "#404040" }}
+                style={{
+                  borderColor: deliveryMode === opt.id ? theme.primary : theme.border,
+                }}
               >
                 {deliveryMode === opt.id && (
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#FF5A1F" }} />
+                  <div
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ backgroundColor: theme.primary }}
+                  />
                 )}
               </div>
             </button>
@@ -1000,8 +1066,11 @@ function CheckoutScreen({
         </div>
 
         {/* Payment */}
-        <div className="rounded-2xl p-4" style={{ backgroundColor: "#1C1C1C" }}>
-          <p className="text-xs font-bold tracking-widest uppercase mb-4" style={{ color: "#FF5A1F" }}>
+        <div className="rounded-2xl p-4" style={{ backgroundColor: theme.cardAlt }}>
+          <p
+            className="text-xs font-bold tracking-widest uppercase mb-4"
+            style={{ color: theme.primary }}
+          >
             Paiement
           </p>
           {[
@@ -1014,22 +1083,34 @@ function CheckoutScreen({
               disabled={opt.disabled}
               className="w-full flex items-center gap-3 p-3 rounded-xl mb-2 last:mb-0"
               style={{
-                backgroundColor: paymentMode === opt.id ? "rgba(255,90,31,0.15)" : "#242424",
-                border: `1px solid ${paymentMode === opt.id ? "#FF5A1F" : "#2E2E2E"}`,
+                backgroundColor:
+                  paymentMode === opt.id
+                    ? `${theme.primary}22`
+                    : theme.card,
+                border: `1px solid ${paymentMode === opt.id ? theme.primary : theme.border}`,
                 opacity: opt.disabled ? 0.4 : 1,
               }}
             >
               <span className="text-xl">{opt.icon}</span>
               <div className="flex-1 text-left">
-                <p className="text-sm font-semibold" style={{ color: "#F5F5F5" }}>{opt.label}</p>
-                <p className="text-xs" style={{ color: "#707070" }}>{opt.sub}</p>
+                <p className="text-sm font-semibold" style={{ color: theme.text }}>
+                  {opt.label}
+                </p>
+                <p className="text-xs" style={{ color: theme.textMuted }}>
+                  {opt.sub}
+                </p>
               </div>
               <div
                 className="w-5 h-5 rounded-full border-2 flex items-center justify-center"
-                style={{ borderColor: paymentMode === opt.id ? "#FF5A1F" : "#404040" }}
+                style={{
+                  borderColor: paymentMode === opt.id ? theme.primary : theme.border,
+                }}
               >
                 {paymentMode === opt.id && (
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: "#FF5A1F" }} />
+                  <div
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ backgroundColor: theme.primary }}
+                  />
                 )}
               </div>
             </button>
@@ -1037,37 +1118,50 @@ function CheckoutScreen({
         </div>
 
         {/* Order summary */}
-        <div className="rounded-2xl p-4" style={{ backgroundColor: "#1C1C1C" }}>
-          <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#FF5A1F" }}>
+        <div className="rounded-2xl p-4" style={{ backgroundColor: theme.cardAlt }}>
+          <p
+            className="text-xs font-bold tracking-widest uppercase mb-3"
+            style={{ color: theme.primary }}
+          >
             Récapitulatif
           </p>
           {cart.map((item) => (
             <div key={item.product.id} className="flex justify-between py-1.5">
-              <p className="text-sm" style={{ color: "#C0C0C0" }}>
+              <p className="text-sm" style={{ color: theme.textMuted }}>
                 {item.product.name} × {item.quantity}
               </p>
-              <p className="text-sm font-semibold" style={{ color: "#F5F5F5" }}>
+              <p className="text-sm font-semibold" style={{ color: theme.text }}>
                 {item.product.price * item.quantity} DA
               </p>
             </div>
           ))}
-          <div className="border-t mt-2 pt-2" style={{ borderColor: "#2E2E2E" }}>
+          <div className="border-t mt-2 pt-2" style={{ borderColor: theme.border }}>
             <div className="flex justify-between">
-              <p className="font-bold" style={{ color: "#F5F5F5" }}>TOTAL</p>
-              <p className="font-black" style={{ color: "#FF5A1F" }}>{total} DA</p>
+              <p className="font-bold" style={{ color: theme.text }}>
+                TOTAL
+              </p>
+              <p className="font-black" style={{ color: theme.primary }}>
+                {total} DA
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Confirm button */}
-      <div className="absolute bottom-0 left-0 right-0 px-5 pb-8 pt-4" style={{ background: "linear-gradient(135deg, #d4b17d 0%, #a84435 100%)", borderTop: "1px solid #b8755e" }}>
+      <div
+        className="absolute bottom-0 left-0 right-0 px-5 pb-8 pt-4"
+        style={{ background: theme.gradient, borderTop: `1px solid ${theme.border}` }}
+      >
         <button
-          onClick={() => onConfirm({ nom, prenom, tel, address, deliveryMode, paymentMode })}
-          className="w-full py-4 rounded-2xl text-white font-bold text-base"
-          style={{ backgroundColor: "#c85a32" }}
+          onClick={() =>
+            onConfirm({ nom, prenom, tel, address, deliveryMode, paymentMode })
+          }
+          disabled={!canSubmit}
+          className="w-full py-4 rounded-2xl text-white font-bold text-base active:scale-[0.98] transition-transform disabled:opacity-50"
+          style={{ backgroundColor: theme.primary }}
         >
-          Confirmer la commande →
+          {submitting ? "Envoi en cours..." : "Confirmer la commande →"}
         </button>
       </div>
     </div>
@@ -1083,30 +1177,31 @@ function ConfirmationScreen({
   order: Order;
   onHome: () => void;
 }) {
+  const theme = BURGER_THEME;
   const steps = ["Commande reçue", "Préparation", "En livraison", "Livrée"];
-  const currentStep = 1; // simulate "Préparation"
+  const currentStep = 1;
 
   return (
     <div
       className="flex flex-col min-h-full pb-24"
-      style={{ background: "linear-gradient(135deg, #d4b17d 0%, #a84435 100%)" }}
+      style={{ background: theme.gradient }}
     >
       <div className="px-5 pt-12 pb-8 text-center">
         <div
           className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-          style={{ backgroundColor: "rgba(255,90,31,0.15)" }}
+          style={{ backgroundColor: `${theme.primary}22` }}
         >
           <span className="text-3xl">✅</span>
         </div>
-        <p className="font-black text-2xl" style={{ color: "#33251f" }}>
+        <p className="font-black text-2xl" style={{ color: theme.text }}>
           Commande confirmée !
         </p>
-        <p className="text-sm mt-2" style={{ color: "#909090" }}>
+        <p className="text-sm mt-2" style={{ color: theme.textMuted }}>
           Merci pour votre commande.
         </p>
         <div
           className="inline-block mt-3 px-4 py-1.5 rounded-full text-xs font-bold"
-          style={{ backgroundColor: "rgba(200,90,50,0.15)", color: "#c85a32" }}
+          style={{ backgroundColor: `${theme.primary}22`, color: theme.primary }}
         >
           Commande #{order.id}
         </div>
@@ -1114,8 +1209,11 @@ function ConfirmationScreen({
 
       <div className="px-5 flex flex-col gap-4">
         {/* Status tracker */}
-        <div className="rounded-2xl p-5" style={{ backgroundColor: "#fffaf2" }}>
-          <p className="text-xs font-bold tracking-widest uppercase mb-5" style={{ color: "#FF5A1F" }}>
+        <div className="rounded-2xl p-5" style={{ backgroundColor: theme.cardAlt }}>
+          <p
+            className="text-xs font-bold tracking-widest uppercase mb-5"
+            style={{ color: theme.primary }}
+          >
             Statut de la commande
           </p>
           {steps.map((step, i) => (
@@ -1124,8 +1222,8 @@ function ConfirmationScreen({
                 <div
                   className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
                   style={{
-                    backgroundColor: i <= currentStep ? "#FF5A1F" : "#2A2A2A",
-                    color: i <= currentStep ? "#fff" : "#404040",
+                    backgroundColor: i <= currentStep ? theme.primary : theme.border,
+                    color: i <= currentStep ? "#fff" : theme.textMuted,
                   }}
                 >
                   {i < currentStep ? "✓" : i === currentStep ? "●" : "○"}
@@ -1133,19 +1231,23 @@ function ConfirmationScreen({
                 {i < steps.length - 1 && (
                   <div
                     className="w-0.5 h-6 my-1"
-                    style={{ backgroundColor: i < currentStep ? "#FF5A1F" : "#2A2A2A" }}
+                    style={{
+                      backgroundColor: i < currentStep ? theme.primary : theme.border,
+                    }}
                   />
                 )}
               </div>
               <div className="pb-4">
                 <p
                   className="text-sm font-semibold"
-                  style={{ color: i <= currentStep ? "#F5F5F5" : "#404040" }}
+                  style={{
+                    color: i <= currentStep ? theme.text : theme.textMuted,
+                  }}
                 >
                   {step}
                 </p>
                 {i === currentStep && (
-                  <p className="text-xs mt-0.5" style={{ color: "#707070" }}>
+                  <p className="text-xs mt-0.5" style={{ color: theme.textMuted }}>
                     En cours...
                   </p>
                 )}
@@ -1155,48 +1257,59 @@ function ConfirmationScreen({
         </div>
 
         {/* Order details */}
-        <div className="rounded-2xl p-4" style={{ backgroundColor: "#fffaf2" }}>
-          <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: "#FF5A1F" }}>
+        <div className="rounded-2xl p-4" style={{ backgroundColor: theme.cardAlt }}>
+          <p
+            className="text-xs font-bold tracking-widest uppercase mb-3"
+            style={{ color: theme.primary }}
+          >
             Détail de la commande
           </p>
           {order.items.map((item) => (
             <div key={item.product.id} className="flex justify-between py-1.5">
-              <p className="text-sm" style={{ color: "#C0C0C0" }}>
+              <p className="text-sm" style={{ color: theme.textMuted }}>
                 {item.product.name} × {item.quantity}
               </p>
-              <p className="text-sm font-semibold" style={{ color: "#F5F5F5" }}>
+              <p className="text-sm font-semibold" style={{ color: theme.text }}>
                 {item.product.price * item.quantity} DA
               </p>
             </div>
           ))}
-          <div className="border-t mt-2 pt-2 flex justify-between" style={{ borderColor: "#2E2E2E" }}>
-            <p className="font-bold" style={{ color: "#F5F5F5" }}>TOTAL</p>
-            <p className="font-black" style={{ color: "#FF5A1F" }}>{order.total} DA</p>
+          <div
+            className="border-t mt-2 pt-2 flex justify-between"
+            style={{ borderColor: theme.border }}
+          >
+            <p className="font-bold" style={{ color: theme.text }}>
+              TOTAL
+            </p>
+            <p className="font-black" style={{ color: theme.primary }}>
+              {order.total} DA
+            </p>
           </div>
         </div>
 
         {/* Delivery info */}
-        <div className="rounded-2xl p-4" style={{ backgroundColor: "#fffaf2" }}>
+        <div className="rounded-2xl p-4" style={{ backgroundColor: theme.cardAlt }}>
           <div className="flex items-center gap-3 mb-2">
             <span className="text-xl">📍</span>
-            <p className="text-sm font-semibold" style={{ color: "#F5F5F5" }}>
+            <p className="text-sm font-semibold" style={{ color: theme.text }}>
               {order.address || "Retrait au restaurant"}
             </p>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xl">⏱</span>
-            <p className="text-sm" style={{ color: "#909090" }}>
-              Temps de préparation estimé : <strong style={{ color: "#F5F5F5" }}>25–35 min</strong>
+            <p className="text-sm" style={{ color: theme.textMuted }}>
+              Temps estimé :{" "}
+              <strong style={{ color: theme.text }}>25–35 min</strong>
             </p>
           </div>
         </div>
 
         <button
           onClick={onHome}
-          className="w-full py-4 rounded-2xl font-bold text-base"
-          style={{ backgroundColor: "#fffaf2", color: "#c85a32" }}
+          className="w-full py-4 rounded-2xl font-bold text-base active:scale-[0.98] transition-transform"
+          style={{ backgroundColor: theme.cardAlt, color: theme.primary }}
         >
-          Retour à l&apos;accueil
+          Retour à l'accueil
         </button>
       </div>
     </div>
@@ -1205,13 +1318,23 @@ function ConfirmationScreen({
 
 // ─── Profile Screen ───────────────────────────────────────────────────────────
 
-function ProfileScreen({ orders }: { orders: Order[] }) {
-  const [tab, setTab] = useState<"profile" | "history">("profile");
+function ProfileScreen({
+  orders,
+  loading,
+}: {
+  orders: Order[];
+  loading: boolean;
+}) {
+  const theme = BURGER_THEME;
+  const [tab, setTab] = useState<"profile" | "history">("history");
 
   return (
-    <div className="flex flex-col min-h-full pb-20" style={{ background: "linear-gradient(135deg, #d4b17d 0%, #a84435 100%)" }}>
+    <div
+      className="flex flex-col min-h-full pb-20"
+      style={{ background: theme.gradient }}
+    >
       <div className="px-5 pt-12 pb-5">
-        <p className="font-black text-2xl" style={{ color: "#33251f" }}>
+        <p className="font-black text-2xl" style={{ color: theme.text }}>
           Mon Profil
         </p>
       </div>
@@ -1220,22 +1343,25 @@ function ProfileScreen({ orders }: { orders: Order[] }) {
       <div className="px-5 mb-6 flex items-center gap-4">
         <div
           className="w-16 h-16 rounded-2xl flex items-center justify-center font-black text-2xl"
-          style={{ backgroundColor: "#c85a32", color: "#fff" }}
+          style={{ backgroundColor: theme.primary, color: "#fff" }}
         >
           U
         </div>
         <div>
-          <p className="font-bold text-base" style={{ color: "#F5F5F5" }}>
+          <p className="font-bold text-base" style={{ color: theme.text }}>
             Utilisateur
           </p>
-          <p className="text-xs" style={{ color: "#707070" }}>
+          <p className="text-xs" style={{ color: theme.textMuted }}>
             Client WOOD PECKER BURGER
           </p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="mx-5 mb-5 p-1 rounded-2xl flex" style={{ backgroundColor: "#fffaf2" }}>
+      <div
+        className="mx-5 mb-5 p-1 rounded-2xl flex"
+        style={{ backgroundColor: theme.cardAlt }}
+      >
         {[
           { id: "profile", label: "Profil" },
           { id: "history", label: "Commandes" },
@@ -1243,10 +1369,10 @@ function ProfileScreen({ orders }: { orders: Order[] }) {
           <button
             key={t.id}
             onClick={() => setTab(t.id as typeof tab)}
-            className="flex-1 py-2.5 rounded-xl font-bold text-sm"
+            className="flex-1 py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95"
             style={{
-              backgroundColor: tab === t.id ? "#c85a32" : "transparent",
-              color: tab === t.id ? "#fff" : "#8b7768",
+              backgroundColor: tab === t.id ? theme.primary : "transparent",
+              color: tab === t.id ? "#fff" : theme.textMuted,
             }}
           >
             {t.label}
@@ -1261,8 +1387,15 @@ function ProfileScreen({ orders }: { orders: Order[] }) {
             { label: "Téléphone", placeholder: "Votre téléphone", icon: "📱" },
             { label: "Adresse", placeholder: "Votre adresse", icon: "📍" },
           ].map((field) => (
-            <div key={field.label} className="rounded-2xl p-4" style={{ backgroundColor: "#fffaf2" }}>
-              <p className="text-xs font-bold tracking-widest uppercase mb-2" style={{ color: "#c85a32" }}>
+            <div
+              key={field.label}
+              className="rounded-2xl p-4"
+              style={{ backgroundColor: theme.cardAlt }}
+            >
+              <p
+                className="text-xs font-bold tracking-widest uppercase mb-2"
+                style={{ color: theme.primary }}
+              >
                 {field.label}
               </p>
               <div className="flex items-center gap-3">
@@ -1271,55 +1404,79 @@ function ProfileScreen({ orders }: { orders: Order[] }) {
                   type="text"
                   placeholder={field.placeholder}
                   className="flex-1 bg-transparent text-sm outline-none"
-                  style={{ color: "#C0C0C0" }}
+                  style={{ color: theme.text }}
                 />
               </div>
             </div>
           ))}
           <button
-            className="w-full py-4 rounded-2xl text-white font-bold text-base"
-            style={{ backgroundColor: "#c85a32" }}
+            className="w-full py-4 rounded-2xl text-white font-bold text-base active:scale-[0.98] transition-transform"
+            style={{ backgroundColor: theme.primary }}
           >
             Sauvegarder
           </button>
         </div>
       ) : (
         <div className="px-5 flex flex-col gap-3">
-          {orders.length === 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-4">
+              <div
+                className="w-8 h-8 rounded-full border-3 border-t-transparent animate-spin"
+                style={{ borderColor: theme.primary, borderTopColor: "transparent" }}
+              />
+              <p style={{ color: theme.textMuted }}>Chargement des commandes...</p>
+            </div>
+          ) : orders.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 gap-4">
               <span className="text-5xl opacity-20">📋</span>
-              <p style={{ color: "#505050" }}>Aucune commande pour le moment.</p>
+              <p style={{ color: theme.textMuted }}>Aucune commande pour le moment.</p>
             </div>
           ) : (
             orders.map((order) => (
-              <div key={order.id} className="rounded-2xl p-4" style={{ backgroundColor: "#fffaf2" }}>
+              <div
+                key={order.id}
+                className="rounded-2xl p-4"
+                style={{ backgroundColor: theme.cardAlt }}
+              >
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <p className="font-bold text-sm" style={{ color: "#F5F5F5" }}>
+                    <p className="font-bold text-sm" style={{ color: theme.text }}>
                       Commande #{order.id}
                     </p>
-                    <p className="text-xs mt-0.5" style={{ color: "#707070" }}>
+                    <p className="text-xs mt-0.5" style={{ color: theme.textMuted }}>
                       {order.date}
                     </p>
                   </div>
                   <span
                     className="text-xs font-bold px-2.5 py-1 rounded-full"
                     style={{
-                      backgroundColor: order.status === "Livrée" ? "rgba(34,197,94,0.15)" : "rgba(255,90,31,0.15)",
-                      color: order.status === "Livrée" ? "#22C55E" : "#FF5A1F",
+                      backgroundColor:
+                        order.status === "Livrée"
+                          ? "rgba(34,197,94,0.15)"
+                          : `${theme.primary}22`,
+                      color: order.status === "Livrée" ? "#22C55E" : theme.primary,
                     }}
                   >
                     {order.status}
                   </span>
                 </div>
                 {order.items.map((item) => (
-                  <p key={item.product.id} className="text-xs py-0.5" style={{ color: "#909090" }}>
+                  <p
+                    key={item.product.id}
+                    className="text-xs py-0.5"
+                    style={{ color: theme.textMuted }}
+                  >
                     {item.product.name} × {item.quantity}
                   </p>
                 ))}
-                <div className="flex justify-between mt-3 pt-3 border-t" style={{ borderColor: "#2E2E2E" }}>
-                  <p className="text-sm" style={{ color: "#707070" }}>Total</p>
-                  <p className="font-bold text-sm" style={{ color: "#FF5A1F" }}>
+                <div
+                  className="flex justify-between mt-3 pt-3 border-t"
+                  style={{ borderColor: theme.border }}
+                >
+                  <p className="text-sm" style={{ color: theme.textMuted }}>
+                    Total
+                  </p>
+                  <p className="font-bold text-sm" style={{ color: theme.primary }}>
                     {order.total} DA
                   </p>
                 </div>
@@ -1336,23 +1493,75 @@ function ProfileScreen({ orders }: { orders: Order[] }) {
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>("home");
-  const [activeCategory] = useState<Category>("burgers");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [prevScreen, setPrevScreen] = useState<Screen>("home");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [favs, setFavs] = useState<Set<string>>(new Set());
   const [orders, setOrders] = useState<Order[]>([]);
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [loadingOrders, setLoadingOrders] = useState(false);
 
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
+
+  const loadOrders = useCallback(async () => {
+    setLoadingOrders(true);
+    const { data, error } = await supabase
+      .from("orders")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) {
+      console.error("Failed to load orders:", error.message);
+    } else if (data) {
+      const mapped: Order[] = data.map((row: Record<string, unknown>) => {
+        const items = (row.items as Array<Record<string, unknown>>).map(
+          (it) => {
+            const product = PRODUCTS.find((p) => p.id === it.id);
+            return {
+              product:
+                product ?? ({
+                  id: it.id as string,
+                  name: it.name as string,
+                  price: it.price as number,
+                  category: "burgers" as Category,
+                  shortIngredients: "",
+                  ingredients: "",
+                  imageBg: "#000",
+                  image: "",
+                } satisfies Product),
+              quantity: it.quantity as number,
+            };
+          }
+        );
+        return {
+          id: row.id as string,
+          date: new Date(row.created_at as string).toLocaleDateString("fr-FR"),
+          items,
+          total: row.total as number,
+          status: row.status as Order["status"],
+          address: (row.address as string) ?? "",
+          customerName: (row.customer_name as string) ?? "",
+        };
+      });
+      setOrders(mapped);
+    }
+    setLoadingOrders(false);
+  }, []);
+
+  useEffect(() => {
+    if (screen === "profile") {
+      loadOrders();
+    }
+  }, [screen, loadOrders]);
 
   function addToCart(product: Product, qty = 1) {
     setCart((prev) => {
       const existing = prev.find((i) => i.product.id === product.id);
       if (existing) {
         return prev.map((i) =>
-          i.product.id === product.id ? { ...i, quantity: i.quantity + qty } : i
+          i.product.id === product.id
+            ? { ...i, quantity: i.quantity + qty }
+            : i
         );
       }
       return [...prev, { product, quantity: qty }];
@@ -1360,7 +1569,9 @@ export default function App() {
   }
 
   function updateQty(id: string, qty: number) {
-    setCart((prev) => prev.map((i) => (i.product.id === id ? { ...i, quantity: qty } : i)));
+    setCart((prev) =>
+      prev.map((i) => (i.product.id === id ? { ...i, quantity: qty } : i))
+    );
   }
 
   function removeFromCart(id: string) {
@@ -1370,7 +1581,8 @@ export default function App() {
   function toggleFav(id: string) {
     setFavs((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }
@@ -1382,14 +1594,17 @@ export default function App() {
   }
 
   function goNav(s: Screen) {
-    if (s !== "product" && s !== "checkout" && s !== "confirmation") {
-      setScreen(s);
-    } else {
-      setScreen(s);
-    }
+    setScreen(s);
   }
 
-  function handleCheckout(info: { nom: string; prenom: string; tel: string; address: string; deliveryMode: string; paymentMode: string }) {
+  async function handleCheckout(info: {
+    nom: string;
+    prenom: string;
+    tel: string;
+    address: string;
+    deliveryMode: string;
+    paymentMode: string;
+  }) {
     const subtotal = cart.reduce((s, i) => s + i.product.price * i.quantity, 0);
     const delivery = info.deliveryMode === "livraison" ? 150 : 0;
     const orderId = Math.floor(Math.random() * 90000 + 10000).toString();
@@ -1400,7 +1615,35 @@ export default function App() {
       total: subtotal + delivery,
       status: "Préparation",
       address: info.address,
+      customerName: `${info.prenom} ${info.nom}`,
     };
+
+    setSubmitting(true);
+    const { error } = await supabase.from("orders").insert({
+      id: orderId,
+      customer_name: order.customerName,
+      phone: info.tel,
+      address: info.address,
+      delivery_mode: info.deliveryMode,
+      payment_mode: info.paymentMode,
+      items: cart.map((i) => ({
+        id: i.product.id,
+        name: i.product.name,
+        price: i.product.price,
+        quantity: i.quantity,
+      })),
+      total: order.total,
+      status: "Préparation",
+    });
+    setSubmitting(false);
+
+    if (error) {
+      alert(
+        "Erreur lors de l'enregistrement de la commande. Veuillez réessayer."
+      );
+      return;
+    }
+
     setOrders((prev) => [order, ...prev]);
     setCurrentOrder(order);
     setCart([]);
@@ -1413,10 +1656,15 @@ export default function App() {
   return (
     <div
       className="relative w-full h-full overflow-hidden"
-      style={{ background: "linear-gradient(135deg, #d4b17d 0%, #a84435 100%)", fontFamily: "'Outfit', sans-serif" }}
+      style={{
+        background: "linear-gradient(135deg, #d4b17d 0%, #a84435 100%)",
+        fontFamily: "'Outfit', sans-serif",
+      }}
     >
-      {/* Mobile frame container */}
-      <div className="w-full h-full overflow-y-auto" style={{ scrollbarWidth: "none" }}>
+      <div
+        className="w-full h-full overflow-y-auto"
+        style={{ scrollbarWidth: "none" }}
+      >
         {screen === "home" && (
           <HomeScreen
             onNav={goNav}
@@ -1425,8 +1673,6 @@ export default function App() {
             onOpenProduct={openProduct}
             favs={favs}
             onToggleFav={toggleFav}
-            searchQuery={searchQuery}
-            onSearch={setSearchQuery}
           />
         )}
         {screen === "menu" && (
@@ -1445,7 +1691,9 @@ export default function App() {
             onCheckout={() => setScreen("checkout")}
           />
         )}
-        {screen === "profile" && <ProfileScreen orders={orders} />}
+        {screen === "profile" && (
+          <ProfileScreen orders={orders} loading={loadingOrders} />
+        )}
         {screen === "product" && selectedProduct && (
           <ProductDetailScreen
             product={selectedProduct}
@@ -1461,6 +1709,7 @@ export default function App() {
             cart={cart}
             onConfirm={handleCheckout}
             onBack={() => setScreen("cart")}
+            submitting={submitting}
           />
         )}
         {screen === "confirmation" && currentOrder && (

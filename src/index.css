@@ -31,4 +31,6 @@ html, body, #root {
   display: none;
 }
 
-scrollbar-width: none;
+* {
+  scrollbar-width: none;
+}

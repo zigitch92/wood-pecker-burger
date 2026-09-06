@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { supabase } from "@/supabase";
 import { PRODUCTS, type Product, type Category } from "@/menu";
 import logo from "@/imports/logo.png.jpg";
@@ -10,7 +10,6 @@ type Screen =
   | "home"
   | "menu"
   | "cart"
-  | "profile"
   | "product"
   | "checkout"
   | "confirmation";
@@ -117,7 +116,6 @@ function BottomNav({
     { id: "home", label: "Accueil", icon: "⌂" },
     { id: "menu", label: "Menu", icon: "◈" },
     { id: "cart", label: "Panier", icon: "◻" },
-    { id: "profile", label: "Profil", icon: "◯" },
   ];
 
   return (
@@ -345,15 +343,7 @@ function HomeScreen({
               "linear-gradient(to top, rgba(20,12,10,0.72), rgba(20,12,10,0.04) 70%)",
           }}
         />
-        <div className="absolute bottom-4 left-5 z-10">
-          <button
-            className="text-white text-xs font-bold px-4 py-2 rounded-xl active:scale-95 transition-transform"
-            style={{ backgroundColor: theme.primary }}
-            onClick={() => onNav("menu")}
-          >
-            Voir le menu →
-          </button>
-        </div>
+
       </div>
 
       {/* Category Tabs */}
@@ -1316,179 +1306,6 @@ function ConfirmationScreen({
   );
 }
 
-// ─── Profile Screen ───────────────────────────────────────────────────────────
-
-function ProfileScreen({
-  orders,
-  loading,
-}: {
-  orders: Order[];
-  loading: boolean;
-}) {
-  const theme = BURGER_THEME;
-  const [tab, setTab] = useState<"profile" | "history">("history");
-
-  return (
-    <div
-      className="flex flex-col min-h-full pb-20"
-      style={{ background: theme.gradient }}
-    >
-      <div className="px-5 pt-12 pb-5">
-        <p className="font-black text-2xl" style={{ color: theme.text }}>
-          Mon Profil
-        </p>
-      </div>
-
-      {/* Avatar */}
-      <div className="px-5 mb-6 flex items-center gap-4">
-        <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center font-black text-2xl"
-          style={{ backgroundColor: theme.primary, color: "#fff" }}
-        >
-          U
-        </div>
-        <div>
-          <p className="font-bold text-base" style={{ color: theme.text }}>
-            Utilisateur
-          </p>
-          <p className="text-xs" style={{ color: theme.textMuted }}>
-            Client WOOD PECKER BURGER
-          </p>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div
-        className="mx-5 mb-5 p-1 rounded-2xl flex"
-        style={{ backgroundColor: theme.cardAlt }}
-      >
-        {[
-          { id: "profile", label: "Profil" },
-          { id: "history", label: "Commandes" },
-        ].map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id as typeof tab)}
-            className="flex-1 py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95"
-            style={{
-              backgroundColor: tab === t.id ? theme.primary : "transparent",
-              color: tab === t.id ? "#fff" : theme.textMuted,
-            }}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {tab === "profile" ? (
-        <div className="px-5 flex flex-col gap-4">
-          {[
-            { label: "Nom", placeholder: "Votre nom", icon: "👤" },
-            { label: "Téléphone", placeholder: "Votre téléphone", icon: "📱" },
-            { label: "Adresse", placeholder: "Votre adresse", icon: "📍" },
-          ].map((field) => (
-            <div
-              key={field.label}
-              className="rounded-2xl p-4"
-              style={{ backgroundColor: theme.cardAlt }}
-            >
-              <p
-                className="text-xs font-bold tracking-widest uppercase mb-2"
-                style={{ color: theme.primary }}
-              >
-                {field.label}
-              </p>
-              <div className="flex items-center gap-3">
-                <span>{field.icon}</span>
-                <input
-                  type="text"
-                  placeholder={field.placeholder}
-                  className="flex-1 bg-transparent text-sm outline-none"
-                  style={{ color: theme.text }}
-                />
-              </div>
-            </div>
-          ))}
-          <button
-            className="w-full py-4 rounded-2xl text-white font-bold text-base active:scale-[0.98] transition-transform"
-            style={{ backgroundColor: theme.primary }}
-          >
-            Sauvegarder
-          </button>
-        </div>
-      ) : (
-        <div className="px-5 flex flex-col gap-3">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-16 gap-4">
-              <div
-                className="w-8 h-8 rounded-full border-3 border-t-transparent animate-spin"
-                style={{ borderColor: theme.primary, borderTopColor: "transparent" }}
-              />
-              <p style={{ color: theme.textMuted }}>Chargement des commandes...</p>
-            </div>
-          ) : orders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 gap-4">
-              <span className="text-5xl opacity-20">📋</span>
-              <p style={{ color: theme.textMuted }}>Aucune commande pour le moment.</p>
-            </div>
-          ) : (
-            orders.map((order) => (
-              <div
-                key={order.id}
-                className="rounded-2xl p-4"
-                style={{ backgroundColor: theme.cardAlt }}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <p className="font-bold text-sm" style={{ color: theme.text }}>
-                      Commande #{order.id}
-                    </p>
-                    <p className="text-xs mt-0.5" style={{ color: theme.textMuted }}>
-                      {order.date}
-                    </p>
-                  </div>
-                  <span
-                    className="text-xs font-bold px-2.5 py-1 rounded-full"
-                    style={{
-                      backgroundColor:
-                        order.status === "Livrée"
-                          ? "rgba(34,197,94,0.15)"
-                          : `${theme.primary}22`,
-                      color: order.status === "Livrée" ? "#22C55E" : theme.primary,
-                    }}
-                  >
-                    {order.status}
-                  </span>
-                </div>
-                {order.items.map((item) => (
-                  <p
-                    key={item.product.id}
-                    className="text-xs py-0.5"
-                    style={{ color: theme.textMuted }}
-                  >
-                    {item.product.name} × {item.quantity}
-                  </p>
-                ))}
-                <div
-                  className="flex justify-between mt-3 pt-3 border-t"
-                  style={{ borderColor: theme.border }}
-                >
-                  <p className="text-sm" style={{ color: theme.textMuted }}>
-                    Total
-                  </p>
-                  <p className="font-bold text-sm" style={{ color: theme.primary }}>
-                    {order.total} DA
-                  </p>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ─── App Root ─────────────────────────────────────────────────────────────────
 
 export default function App() {
@@ -1497,62 +1314,10 @@ export default function App() {
   const [prevScreen, setPrevScreen] = useState<Screen>("home");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [favs, setFavs] = useState<Set<string>>(new Set());
-  const [orders, setOrders] = useState<Order[]>([]);
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [loadingOrders, setLoadingOrders] = useState(false);
 
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
-
-  const loadOrders = useCallback(async () => {
-    setLoadingOrders(true);
-    const { data, error } = await supabase
-      .from("orders")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (error) {
-      console.error("Failed to load orders:", error.message);
-    } else if (data) {
-      const mapped: Order[] = data.map((row: Record<string, unknown>) => {
-        const items = (row.items as Array<Record<string, unknown>>).map(
-          (it) => {
-            const product = PRODUCTS.find((p) => p.id === it.id);
-            return {
-              product:
-                product ?? ({
-                  id: it.id as string,
-                  name: it.name as string,
-                  price: it.price as number,
-                  category: "burgers" as Category,
-                  shortIngredients: "",
-                  ingredients: "",
-                  imageBg: "#000",
-                  image: "",
-                } satisfies Product),
-              quantity: it.quantity as number,
-            };
-          }
-        );
-        return {
-          id: row.id as string,
-          date: new Date(row.created_at as string).toLocaleDateString("fr-FR"),
-          items,
-          total: row.total as number,
-          status: row.status as Order["status"],
-          address: (row.address as string) ?? "",
-          customerName: (row.customer_name as string) ?? "",
-        };
-      });
-      setOrders(mapped);
-    }
-    setLoadingOrders(false);
-  }, []);
-
-  useEffect(() => {
-    if (screen === "profile") {
-      loadOrders();
-    }
-  }, [screen, loadOrders]);
 
   function addToCart(product: Product, qty = 1) {
     setCart((prev) => {
@@ -1644,7 +1409,6 @@ export default function App() {
       return;
     }
 
-    setOrders((prev) => [order, ...prev]);
     setCurrentOrder(order);
     setCart([]);
     setScreen("confirmation");
@@ -1690,9 +1454,6 @@ export default function App() {
             onRemove={removeFromCart}
             onCheckout={() => setScreen("checkout")}
           />
-        )}
-        {screen === "profile" && (
-          <ProfileScreen orders={orders} loading={loadingOrders} />
         )}
         {screen === "product" && selectedProduct && (
           <ProductDetailScreen

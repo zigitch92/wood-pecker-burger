@@ -247,8 +247,12 @@ function HomeScreen({
       {/* Slogan */}
       <div className="px-5 mb-4 text-center">
         <p
-          className="font-bold text-lg leading-tight italic"
-          style={{ color: theme.text }}
+          className="font-black text-lg leading-tight"
+          style={{
+            color: theme.text,
+            WebkitTextStroke: "0.35px rgba(255, 250, 242, 0.8)",
+            textShadow: "1px 2px 3px rgba(51, 37, 31, 0.28)",
+          }}
         >
           "L'art du burger, la vitesse du fast."
         </p>
@@ -256,14 +260,25 @@ function HomeScreen({
 
       {/* Hero Banner */}
       <div
-        className="mx-5 rounded-2xl mb-5 overflow-hidden"
+        className="mx-5 rounded-2xl mb-5 relative overflow-hidden"
         style={{ backgroundColor: theme.card, height: "170px" }}
       >
         <img
-          src="/COVER.PNG.jpg"
-          alt="Wood Pecker Burger"
-          className="w-full h-full object-contain"
+          src="/Gemini_Generated_Image_y59vxdy59vxdy59v.jpg"
+          alt="Packaging Wood Pecker Burger, frites et boisson"
+          className="w-full h-full object-cover"
+          style={{ objectPosition: "center" }}
         />
+        <div
+          className="absolute top-3 right-3 max-w-[45%] text-right"
+          style={{
+            fontFamily: "'Rye', serif",
+            color: "#fff7df",
+            textShadow: "2px 2px 0 #4a2114, 0 3px 6px rgba(0,0,0,0.45)",
+          }}
+        >
+          <p className="text-base leading-tight">Commandez en un seul click</p>
+        </div>
       </div>
 
       {/* Category Tabs */}
@@ -322,34 +337,14 @@ function HomeScreen({
         ))}
       </div>
 
-      {/* Order CTA */}
-      <div
-        className="mx-5 mt-6 rounded-2xl p-4 flex items-center gap-4 active:scale-[0.98] transition-transform cursor-pointer"
-        style={{ backgroundColor: theme.card }}
-        onClick={() => onNav("cart")}
-      >
-        <span className="text-3xl">🔥</span>
-        <div className="flex-1">
-          <p className="font-bold text-sm" style={{ color: theme.text }}>
-            Commandez maintenant
-          </p>
-          <p className="text-xs" style={{ color: theme.textMuted }}>
-            Livraison rapide, paiement à la livraison
-          </p>
-        </div>
-        <span className="font-bold text-lg" style={{ color: theme.primary }}>
-          →
-        </span>
-      </div>
-
       {/* Horaires d'ouverture */}
       <div
-        className="mx-5 mt-4 mb-2 rounded-2xl py-3 px-4 flex items-center justify-center gap-2"
+        className="mx-5 mt-6 mb-2 rounded-2xl py-3 px-4 flex items-center justify-center gap-2"
         style={{ backgroundColor: theme.cardAlt }}
       >
         <span className="text-sm">🕐</span>
         <p className="text-sm font-semibold" style={{ color: theme.text }}>
-          Horaires d'ouverture : 11h00 - Minuit
+          Horaires d'ouverture : 11h - Minuit
         </p>
       </div>
     </div>
@@ -535,8 +530,12 @@ function ProductDetailScreen({
           <img
             src={product.image}
             alt={product.name}
-            className="w-full h-full object-cover scale-125"
-            style={{ objectPosition: "center" }}
+            className="w-full h-full object-cover"
+            style={{
+              objectPosition: "82% center",
+              transform: "translateX(-10%) scale(1.45)",
+              transformOrigin: "82% center",
+            }}
           />
         </div>
       </div>

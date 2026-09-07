@@ -101,77 +101,6 @@ function ProductImage({
   );
 }
 
-// ─── Bottom Navigation ────────────────────────────────────────────────────────
-
-function BottomNav({
-  screen,
-  onNav,
-  cartCount,
-}: {
-  screen: Screen;
-  onNav: (s: Screen) => void;
-  cartCount: number;
-}) {
-  const tabs: { id: Screen; label: string; icon: string }[] = [
-    { id: "home", label: "Accueil", icon: "⌂" },
-    { id: "menu", label: "Menu", icon: "◈" },
-    { id: "cart", label: "Panier", icon: "◻" },
-  ];
-
-  return (
-    <nav
-      className="absolute bottom-0 left-0 right-0 z-50 flex items-stretch"
-      style={{
-        backgroundColor: "#f8ecd8",
-        borderTop: "1px solid #e3d5c3",
-        paddingBottom: "env(safe-area-inset-bottom)",
-      }}
-    >
-      {tabs.map((tab) => {
-        const active =
-          screen === tab.id ||
-          (screen === "product" && tab.id === "menu") ||
-          (screen === "checkout" && tab.id === "cart") ||
-          (screen === "confirmation" && tab.id === "cart");
-        return (
-          <button
-            key={tab.id}
-            onClick={() => onNav(tab.id)}
-            className="flex-1 flex flex-col items-center justify-center gap-1 py-3 relative"
-          >
-            {tab.id === "cart" && cartCount > 0 && (
-              <span
-                className="absolute top-2 right-[calc(50%-10px)] text-[10px] font-bold text-white rounded-full w-4 h-4 flex items-center justify-center"
-                style={{ backgroundColor: "#c85a32" }}
-              >
-                {cartCount}
-              </span>
-            )}
-            <div
-              className="text-base font-light"
-              style={{ color: active ? "#c85a32" : "#8b7768" }}
-            >
-              {tab.icon}
-            </div>
-            <span
-              className="text-[10px] font-semibold tracking-wide"
-              style={{ color: active ? "#c85a32" : "#8b7768" }}
-            >
-              {tab.label}
-            </span>
-            {active && (
-              <div
-                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full"
-                style={{ backgroundColor: "#c85a32" }}
-              />
-            )}
-          </button>
-        );
-      })}
-    </nav>
-  );
-}
-
 // ─── Product Card ─────────────────────────────────────────────────────────────
 
 function ProductCard({
@@ -265,7 +194,7 @@ function HomeScreen({
 
   return (
     <div
-      className="flex flex-col min-h-full pb-20"
+      className="flex flex-col min-h-full pb-6"
       style={{ background: theme.gradient }}
     >
       {/* Header */}
@@ -444,7 +373,7 @@ function MenuScreen({
 
   return (
     <div
-      className="flex flex-col min-h-full pb-20"
+      className="flex flex-col min-h-full pb-6"
       style={{ background: theme.gradient }}
     >
       <div className="px-5 pt-12 pb-5">
@@ -725,11 +654,13 @@ function CartScreen({
   onUpdateQty,
   onRemove,
   onCheckout,
+  onBack,
 }: {
   cart: CartItem[];
   onUpdateQty: (id: string, qty: number) => void;
   onRemove: (id: string) => void;
   onCheckout: () => void;
+  onBack: () => void;
 }) {
   const theme = BURGER_THEME;
   const subtotal = cart.reduce((s, i) => s + i.product.price * i.quantity, 0);
@@ -738,18 +669,27 @@ function CartScreen({
 
   return (
     <div
-      className="flex flex-col min-h-full pb-20"
+      className="flex flex-col min-h-full pb-6"
       style={{ background: theme.gradient }}
     >
-      <div className="px-5 pt-12 pb-5">
-        <p className="font-black text-2xl" style={{ color: theme.text }}>
-          Mon Panier
-        </p>
-        <p className="text-sm mt-1" style={{ color: theme.textMuted }}>
-          {cart.length === 0
-            ? "Votre panier est vide"
-            : `${cart.reduce((s, i) => s + i.quantity, 0)} article(s)`}
-        </p>
+      <div className="px-5 pt-12 pb-5 flex items-center gap-3">
+        <button
+          onClick={onBack}
+          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
+          style={{ backgroundColor: theme.cardAlt }}
+        >
+          <span style={{ color: theme.text }}>←</span>
+        </button>
+        <div>
+          <p className="font-black text-2xl" style={{ color: theme.text }}>
+            Mon Panier
+          </p>
+          <p className="text-sm mt-0.5" style={{ color: theme.textMuted }}>
+            {cart.length === 0
+              ? "Votre panier est vide"
+              : `${cart.reduce((s, i) => s + i.quantity, 0)} article(s)`}
+          </p>
+        </div>
       </div>
 
       {cart.length === 0 ? (
@@ -1317,7 +1257,6 @@ export default function App() {
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
 
   function addToCart(product: Product, qty = 1) {
     setCart((prev) => {
@@ -1414,9 +1353,6 @@ export default function App() {
     setScreen("confirmation");
   }
 
-  const showBottomNav =
-    screen !== "product" && screen !== "checkout" && screen !== "confirmation";
-
   return (
     <div
       className="relative w-full h-full overflow-hidden"
@@ -1453,6 +1389,7 @@ export default function App() {
             onUpdateQty={updateQty}
             onRemove={removeFromCart}
             onCheckout={() => setScreen("checkout")}
+            onBack={() => setScreen("home")}
           />
         )}
         {screen === "product" && selectedProduct && (
@@ -1481,9 +1418,6 @@ export default function App() {
         )}
       </div>
 
-      {showBottomNav && (
-        <BottomNav screen={screen} onNav={goNav} cartCount={cartCount} />
-      )}
     </div>
   );
 }

@@ -43,33 +43,316 @@ interface Theme {
 }
 
 const BURGER_THEME: Theme = {
-  primary: "#c85a32",
-  primaryDark: "#a84435",
-  accent: "#e8a838",
-  gradient: "linear-gradient(135deg, #d4b17d 0%, #a84435 100%)",
-  card: "#f8ecd8",
-  cardAlt: "#fffaf2",
-  text: "#33251f",
-  textMuted: "#8b7768",
-  border: "#e3d5c3",
-  headerBg: "#f8ecd8",
+  primary: "#d81f1f",
+  primaryDark: "#b01414",
+  accent: "#ffb703",
+  gradient: "#f3f3f3",
+  card: "#ffffff",
+  cardAlt: "#f6f6f6",
+  text: "#1b1b1b",
+  textMuted: "#7d7d7d",
+  border: "#e6e6e6",
+  headerBg: "#d81f1f",
 };
 
 const COCKTAIL_THEME: Theme = {
-  primary: "#2d7a4f",
-  primaryDark: "#1f5e3a",
-  accent: "#d4b838",
-  gradient: "linear-gradient(135deg, #c5d99a 0%, #2d7a4f 100%)",
-  card: "#e8f0d8",
-  cardAlt: "#f4f8e8",
-  text: "#1a3320",
-  textMuted: "#5a7a62",
-  border: "#c5d9b0",
-  headerBg: "#e8f0d8",
+  primary: "#1f8a4c",
+  primaryDark: "#166b3a",
+  accent: "#f2c230",
+  gradient: "#f2f7f1",
+  card: "#ffffff",
+  cardAlt: "#eaf3e8",
+  text: "#14261a",
+  textMuted: "#6b7f70",
+  border: "#d8e6d5",
+  headerBg: "#1f8a4c",
 };
 
 function themeFor(category: Category): Theme {
   return category === "drinks" ? COCKTAIL_THEME : BURGER_THEME;
+}
+
+const CARD_SHADOW = "0 10px 28px rgba(0,0,0,0.10)";
+
+// ─── Icons ────────────────────────────────────────────────────────────────────
+
+function Icon({
+  d,
+  size = 22,
+  color = "currentColor",
+  strokeWidth = 2.2,
+  fill = "none",
+}: {
+  d: string | string[];
+  size?: number;
+  color?: string;
+  strokeWidth?: number;
+  fill?: string;
+}) {
+  const paths = Array.isArray(d) ? d : [d];
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill={fill}
+      stroke={color}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {paths.map((p, i) => (
+        <path key={i} d={p} />
+      ))}
+    </svg>
+  );
+}
+
+const ICONS = {
+  menu: ["M4 7h16", "M4 12h16", "M4 17h16"],
+  search: ["M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z", "M20 20l-3.5-3.5"],
+  back: ["M19 12H5", "M11 18l-6-6 6-6"],
+  home: ["M3 11l9-8 9 8", "M5 10v10h14V10", "M10 20v-6h4v6"],
+  list: ["M8 6h13", "M8 12h13", "M8 18h13", "M3 6h.01", "M3 12h.01", "M3 18h.01"],
+  basket: [
+    "M3 10h18l-1.5 9a2 2 0 0 1-2 1.7H6.5a2 2 0 0 1-2-1.7L3 10z",
+    "M8 10l3-6",
+    "M16 10l-3-6",
+    "M9 14v3",
+    "M15 14v3",
+  ],
+  heart: [
+    "M12 20.5s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 8a4.3 4.3 0 0 1 7.5 2.5c0 5.4-7.5 10-7.5 10z",
+  ],
+  plus: ["M12 5v14", "M5 12h14"],
+  minus: ["M5 12h14"],
+  close: ["M6 6l12 12", "M18 6L6 18"],
+  check: ["M5 12l5 5L20 7"],
+  clock: ["M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z", "M12 7v5l3 2"],
+  pin: ["M12 21s-6-5.3-6-11a6 6 0 0 1 12 0c0 5.7-6 11-6 11z", "M12 10h.01"],
+  burger: [
+    "M4 10h16a8 8 0 0 0-16 0z",
+    "M3 14h18",
+    "M4 17h16a2 2 0 0 1-2 3H6a2 2 0 0 1-2-3z",
+  ],
+  cocktail: ["M4 4h16l-8 9-8-9z", "M12 13v7", "M8 20h8", "M8 8h8"],
+  bike: [
+    "M5.5 17a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z",
+    "M18.5 17a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z",
+    "M5.5 14.5L9 9h6l3.5 5.5",
+    "M12 14.5L9 9",
+  ],
+  store: ["M3 9l1.5-5h15L21 9", "M3 9h18v11H3z", "M9 20v-6h6v6"],
+  cash: ["M2 7h20v10H2z", "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z", "M6 12h.01", "M18 12h.01"],
+  card: ["M2 6h20v12H2z", "M2 10h20", "M6 15h4"],
+};
+
+// ─── Small UI pieces ──────────────────────────────────────────────────────────
+
+function RoundButton({
+  onClick,
+  children,
+  size = 44,
+  bg = "#ffffff",
+  color = "#1b1b1b",
+  shadow = true,
+  label,
+  className = "",
+}: {
+  onClick?: () => void;
+  children: React.ReactNode;
+  size?: number;
+  bg?: string;
+  color?: string;
+  shadow?: boolean;
+  label?: string;
+  className?: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label={label}
+      className={`rounded-full flex items-center justify-center active:scale-90 transition-transform flex-shrink-0 ${className}`}
+      style={{
+        width: size,
+        height: size,
+        backgroundColor: bg,
+        color,
+        boxShadow: shadow ? "0 6px 16px rgba(0,0,0,0.18)" : "none",
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function LogoBubble({ size = 44 }: { size?: number }) {
+  return (
+    <div
+      className="rounded-full overflow-hidden flex-shrink-0 bg-white"
+      style={{
+        width: size,
+        height: size,
+        boxShadow: "0 6px 16px rgba(0,0,0,0.18)",
+        border: "2px solid #ffffff",
+      }}
+    >
+      <img
+        src={logo}
+        alt="Wood Pecker Burger"
+        className="w-full h-full object-cover"
+      />
+    </div>
+  );
+}
+
+function RedHeader({
+  theme,
+  left,
+  right,
+  title,
+  children,
+  bottomPadding = "pb-8",
+}: {
+  theme: Theme;
+  left?: React.ReactNode;
+  right?: React.ReactNode;
+  title?: string;
+  children?: React.ReactNode;
+  bottomPadding?: string;
+}) {
+  return (
+    <div
+      className={`relative px-5 pt-12 ${bottomPadding} text-white overflow-hidden`}
+      style={{
+        backgroundColor: theme.headerBg,
+        borderBottomLeftRadius: 36,
+        borderBottomRightRadius: 36,
+      }}
+    >
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 20% 10%, rgba(255,255,255,0.16) 0 40px, transparent 41px), radial-gradient(circle at 85% 30%, rgba(255,255,255,0.12) 0 60px, transparent 61px), radial-gradient(circle at 60% 90%, rgba(255,255,255,0.10) 0 50px, transparent 51px)",
+        }}
+      />
+      <div className="relative flex items-center justify-between">
+        <div className="w-11">{left}</div>
+        {title && (
+          <p className="font-bold text-base tracking-wide">{title}</p>
+        )}
+        <div className="w-11 flex justify-end">{right}</div>
+      </div>
+      {children && <div className="relative">{children}</div>}
+    </div>
+  );
+}
+
+function BottomNav({
+  active,
+  onNav,
+  cartCount,
+  theme,
+}: {
+  active: Screen;
+  onNav: (s: Screen) => void;
+  cartCount: number;
+  theme: Theme;
+}) {
+  const items: { id: Screen; icon: string[]; label: string }[] = [
+    { id: "home", icon: ICONS.home, label: "Accueil" },
+    { id: "menu", icon: ICONS.list, label: "Menu" },
+    { id: "cart", icon: ICONS.basket, label: "Panier" },
+  ];
+  return (
+    <nav
+      aria-label="Navigation principale"
+      className="absolute bottom-0 left-0 right-0 pt-7 pb-6 px-8 flex items-center justify-around"
+      style={{
+        backgroundColor: theme.primary,
+        borderRadius: "50% 50% 0 0 / 34px 34px 0 0",
+        boxShadow: "0 -6px 20px rgba(0,0,0,0.12)",
+      }}
+    >
+      {items.map((item) => {
+        const isActive = active === item.id;
+        return (
+          <button
+            key={item.id}
+            onClick={() => onNav(item.id)}
+            aria-label={item.label}
+            aria-current={isActive ? "page" : undefined}
+            className="relative rounded-full flex items-center justify-center active:scale-90 transition-all"
+            style={{
+              width: 52,
+              height: 52,
+              backgroundColor: isActive ? "#ffffff" : "transparent",
+              color: isActive ? theme.primary : "#ffffff",
+              boxShadow: isActive ? "0 6px 16px rgba(0,0,0,0.2)" : "none",
+            }}
+          >
+            <Icon d={item.icon} size={24} strokeWidth={2.4} />
+            {item.id === "cart" && cartCount > 0 && (
+              <span
+                className="absolute -top-0.5 -right-0.5 text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center"
+                style={{
+                  backgroundColor: theme.accent,
+                  color: "#1b1b1b",
+                  border: `2px solid ${theme.primary}`,
+                }}
+              >
+                {cartCount}
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
+function CategoryRow({
+  active,
+  onChange,
+  theme,
+}: {
+  active: Category;
+  onChange: (c: Category) => void;
+  theme: Theme;
+}) {
+  const cats: { id: Category; label: string; icon: string[] }[] = [
+    { id: "burgers", label: "Burgers", icon: ICONS.burger },
+    { id: "drinks", label: "Cocktails", icon: ICONS.cocktail },
+  ];
+  return (
+    <div
+      className="flex gap-3 overflow-x-auto px-5"
+      style={{ scrollbarWidth: "none" }}
+    >
+      {cats.map((cat) => {
+        const isActive = active === cat.id;
+        const catTheme = themeFor(cat.id);
+        return (
+          <button
+            key={cat.id}
+            onClick={() => onChange(cat.id)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full font-bold text-sm active:scale-95 transition-all flex-shrink-0"
+            style={{
+              backgroundColor: isActive ? catTheme.primary : theme.card,
+              color: isActive ? "#ffffff" : theme.text,
+              boxShadow: isActive ? CARD_SHADOW : "0 2px 8px rgba(0,0,0,0.06)",
+            }}
+          >
+            <Icon d={cat.icon} size={18} />
+            <span>{cat.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
 }
 
 // ─── Product Image ────────────────────────────────────────────────────────────
@@ -88,8 +371,8 @@ function ProductImage({
   };
   return (
     <div
-      className={`w-full ${heights[size]} rounded-xl overflow-hidden relative`}
-      style={{ backgroundColor: product.imageBg }}
+      className={`w-full ${heights[size]} rounded-2xl overflow-hidden relative`}
+      style={{ backgroundColor: product.imageBg, boxShadow: CARD_SHADOW }}
     >
       <img
         src={product.image}
@@ -119,47 +402,68 @@ function ProductCard({
   theme: Theme;
 }) {
   return (
-    <div
-      className="rounded-2xl overflow-hidden flex-shrink-0"
-      style={{ backgroundColor: theme.card, width: "220px" }}
-    >
-      <div className="relative cursor-pointer" onClick={onOpen}>
-        <ProductImage product={product} size="md" />
-        <button
-          className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-          onClick={(e) => {
-            e.stopPropagation();
-            onFav();
-          }}
+    <div className="flex flex-col pt-10 min-w-0">
+      <div
+        className="rounded-3xl flex flex-col items-center px-3 pb-3 pt-0"
+        style={{ backgroundColor: theme.card, boxShadow: CARD_SHADOW }}
+      >
+        <div
+          className="relative cursor-pointer w-[88%] -mt-10"
+          onClick={onOpen}
         >
-          <span className="text-sm">{isFav ? "❤️" : "🤍"}</span>
-        </button>
-      </div>
-      <div className="p-3">
-        <p
-          className="font-bold text-sm leading-tight"
-          style={{ color: theme.text }}
-        >
-          {product.name}
-        </p>
-        <p
-          className="text-[11px] mt-0.5 line-clamp-2 leading-snug"
-          style={{ color: theme.textMuted }}
-        >
-          {product.shortIngredients}
-        </p>
-        <div className="flex items-center justify-between mt-3">
-          <span className="font-bold text-sm" style={{ color: theme.primary }}>
-            {product.price} DA
-          </span>
+          <ProductImage product={product} size="md" />
           <button
-            onClick={onAdd}
-            className="text-white text-xs font-bold px-3 py-1.5 rounded-xl active:scale-95 transition-transform"
-            style={{ backgroundColor: theme.primary }}
+            className="absolute -top-2 -right-2 w-8 h-8 rounded-full flex items-center justify-center bg-white"
+            style={{
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              color: isFav ? theme.primary : theme.textMuted,
+            }}
+            aria-label={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
+            aria-pressed={isFav}
+            onClick={(e) => {
+              e.stopPropagation();
+              onFav();
+            }}
           >
-            + Ajouter
+            <Icon
+              d={ICONS.heart}
+              size={16}
+              fill={isFav ? theme.primary : "none"}
+            />
           </button>
+        </div>
+        <div className="w-full pt-3">
+          <p
+            className="font-bold text-sm leading-tight text-pretty"
+            style={{ color: theme.text }}
+          >
+            {product.name}
+          </p>
+          <p
+            className="text-[11px] mt-1 line-clamp-2 leading-snug"
+            style={{ color: theme.textMuted }}
+          >
+            {product.shortIngredients}
+          </p>
+          <div className="flex items-center justify-between mt-3">
+            <span className="font-bold text-base" style={{ color: theme.text }}>
+              <span className="text-[11px] mr-0.5" style={{ color: theme.primary }}>
+                DA
+              </span>
+              {product.price}
+            </span>
+            <button
+              onClick={onAdd}
+              aria-label={`Ajouter ${product.name} au panier`}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform"
+              style={{
+                backgroundColor: theme.primary,
+                boxShadow: `0 6px 14px ${theme.primary}55`,
+              }}
+            >
+              <Icon d={ICONS.plus} size={18} strokeWidth={3} />
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -167,6 +471,13 @@ function ProductCard({
 }
 
 // ─── Home Screen ──────────────────────────────────────────────────────────────
+
+function greetingForNow() {
+  const h = new Date().getHours();
+  if (h < 12) return "Bonjour !";
+  if (h < 18) return "Bon après-midi !";
+  return "Bonsoir !";
+}
 
 function HomeScreen({
   onNav,
@@ -185,145 +496,98 @@ function HomeScreen({
 }) {
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
   const [activeCategory, setActiveCategory] = useState<Category>("burgers");
+  const [query, setQuery] = useState("");
   const theme = themeFor(activeCategory);
 
   const burgers = PRODUCTS.filter((p) => p.category === "burgers");
   const drinks = PRODUCTS.filter((p) => p.category === "drinks");
 
-  const visible = activeCategory === "burgers" ? burgers : drinks;
+  const q = query.trim().toLowerCase();
+  const visible = (activeCategory === "burgers" ? burgers : drinks).filter(
+    (p) =>
+      q === "" ||
+      p.name.toLowerCase().includes(q) ||
+      p.shortIngredients.toLowerCase().includes(q)
+  );
 
   return (
     <div
-      className="flex flex-col min-h-full pb-6"
+      className="flex flex-col min-h-full pb-32"
       style={{ background: theme.gradient }}
     >
-      {/* Header */}
-      <div className="px-5 pt-12 pb-5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div
-            className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
-            style={{ backgroundColor: theme.headerBg }}
-          >
-            <img
-              src={logo}
-              alt="Wood Pecker Burger"
-              className="w-full h-full object-contain object-center rounded-full"
-            />
-          </div>
-          <div>
-            <p
-              className="font-black text-base tracking-wider leading-none"
-              style={{ color: theme.text }}
-            >
-              WOOD PECKER
-            </p>
-            <p
-              className="text-[10px] tracking-widest"
-              style={{ color: theme.primary }}
-            >
-              BURGER
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            className="w-9 h-9 rounded-xl flex items-center justify-center relative active:scale-90 transition-transform"
-            style={{ backgroundColor: theme.headerBg }}
-            onClick={() => onNav("cart")}
-          >
-            <span className="text-base">🛒</span>
-            {cartCount > 0 && (
-              <span
-                className="absolute -top-1 -right-1 text-[9px] font-black text-white rounded-full w-4 h-4 flex items-center justify-center"
-                style={{ backgroundColor: theme.primary }}
-              >
-                {cartCount}
-              </span>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Slogan */}
-      <div className="px-5 mb-4 text-center">
-        <p
-          className="font-black text-lg leading-tight"
-          style={{
-            color: theme.text,
-            WebkitTextStroke: "0.35px rgba(255, 250, 242, 0.8)",
-            textShadow: "1px 2px 3px rgba(51, 37, 31, 0.28)",
-          }}
-        >
-          "L'art du burger, la vitesse du fast."
-        </p>
-      </div>
-
-      {/* Hero Banner */}
-      <div
-        className="mx-5 rounded-2xl mb-5 relative overflow-hidden"
-        style={{ backgroundColor: theme.card, height: "170px" }}
+      <RedHeader
+        theme={theme}
+        left={
+          <RoundButton onClick={() => onNav("menu")} label="Ouvrir le menu">
+            <Icon d={ICONS.menu} size={20} strokeWidth={2.6} />
+          </RoundButton>
+        }
+        right={<LogoBubble />}
       >
-        <img
-          src="/Gemini_Generated_Image_y59vxdy59vxdy59v.jpg"
-          alt="Packaging Wood Pecker Burger, frites et boisson"
-          className="w-full h-full object-cover"
-          style={{ objectPosition: "center" }}
-        />
-        <div
-          className="absolute top-3 right-3 max-w-[45%] text-right"
-          style={{
-            fontFamily: "'Rye', serif",
-            color: "#fff7df",
-            textShadow: "2px 2px 0 #4a2114, 0 3px 6px rgba(0,0,0,0.45)",
-          }}
-        >
-          <p className="text-base leading-tight">Commandez en un seul click</p>
+        {/* Greeting */}
+        <div className="mt-7">
+          <p className="text-base font-medium opacity-95">
+            {greetingForNow()} 🍔
+          </p>
+          <p className="font-black text-2xl leading-tight mt-0.5 text-balance">
+            {activeCategory === "burgers"
+              ? "C'est l'heure du burger !"
+              : "C'est l'heure du cocktail !"}
+          </p>
+          {cartCount > 0 && (
+            <button
+              onClick={() => onNav("cart")}
+              className="mt-2 text-xs font-semibold underline underline-offset-2 opacity-90"
+            >
+              {cartCount} article(s) dans le panier
+            </button>
+          )}
         </div>
+
+        {/* Search */}
+        <label
+          className="mt-5 flex items-center gap-3 rounded-full bg-white px-4 py-3"
+          style={{ boxShadow: "0 8px 20px rgba(0,0,0,0.15)" }}
+        >
+          <span style={{ color: theme.textMuted }}>
+            <Icon d={ICONS.search} size={18} />
+          </span>
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Trouvons-vous un bon burger..."
+            className="flex-1 bg-transparent outline-none text-sm min-w-0"
+            style={{ color: theme.text }}
+          />
+        </label>
+      </RedHeader>
+
+      {/* Category Row */}
+      <div className="mt-6">
+        <CategoryRow
+          active={activeCategory}
+          onChange={setActiveCategory}
+          theme={theme}
+        />
       </div>
 
-      {/* Category Tabs */}
-      <div className="mx-5 mb-5 flex gap-3">
-        <button
-          onClick={() => setActiveCategory("burgers")}
-          className="min-w-0 flex-1 flex items-center justify-center gap-1 py-3.5 rounded-2xl font-bold text-xs transition-all active:scale-95"
-          style={{
-            backgroundColor:
-              activeCategory === "burgers" ? theme.primary : theme.card,
-            color: activeCategory === "burgers" ? "#fff" : theme.textMuted,
-          }}
-        >
-          🍔 <span>NOS BURGERS</span>
-        </button>
-        <button
-          onClick={() => setActiveCategory("drinks")}
-          className="min-w-0 flex-1 flex items-center justify-center gap-1 py-3.5 rounded-2xl font-bold text-xs transition-all active:scale-95"
-          style={{
-            backgroundColor:
-              activeCategory === "drinks" ? theme.primary : theme.card,
-            color: activeCategory === "drinks" ? "#fff" : theme.textMuted,
-          }}
-        >
-          🥤 <span>NOS COCKTAILS</span>
-        </button>
-      </div>
-
-      {/* Products horizontal scroll */}
-      <div className="px-5 mb-2 flex items-center justify-between">
-        <p className="font-bold text-base" style={{ color: theme.text }}>
+      {/* Section title */}
+      <div className="px-5 mt-6 flex items-center justify-between">
+        <p className="font-black text-lg" style={{ color: theme.text }}>
           {activeCategory === "burgers" ? "Nos Burgers" : "Nos Cocktails"}
         </p>
         <button
-          className="text-xs font-semibold"
+          className="text-xs font-bold"
           style={{ color: theme.primary }}
           onClick={() => onNav("menu")}
         >
           Tout voir →
         </button>
       </div>
-      <div
-        className="flex gap-4 overflow-x-auto px-5 pb-2"
-        style={{ scrollbarWidth: "none" }}
-      >
+
+      {/* Products grid */}
+      <div className="px-5 grid grid-cols-2 gap-x-4">
         {visible.map((product) => (
           <ProductCard
             key={product.id}
@@ -335,14 +599,24 @@ function HomeScreen({
             theme={theme}
           />
         ))}
+        {visible.length === 0 && (
+          <p
+            className="col-span-2 text-center text-sm py-10"
+            style={{ color: theme.textMuted }}
+          >
+            Aucun produit ne correspond à votre recherche.
+          </p>
+        )}
       </div>
 
       {/* Horaires d'ouverture */}
       <div
-        className="mx-5 mt-6 mb-2 rounded-2xl py-3 px-4 flex items-center justify-center gap-2"
-        style={{ backgroundColor: theme.cardAlt }}
+        className="mx-5 mt-8 rounded-full py-3 px-5 flex items-center justify-center gap-2"
+        style={{ backgroundColor: theme.card, boxShadow: "0 2px 10px rgba(0,0,0,0.06)" }}
       >
-        <span className="text-sm">🕐</span>
+        <span style={{ color: theme.primary }}>
+          <Icon d={ICONS.clock} size={16} />
+        </span>
         <p className="text-sm font-semibold" style={{ color: theme.text }}>
           Horaires d'ouverture : 11h - Minuit
         </p>
@@ -358,11 +632,13 @@ function MenuScreen({
   onOpenProduct,
   favs,
   onToggleFav,
+  onBack,
 }: {
   onAddToCart: (p: Product) => void;
   onOpenProduct: (p: Product) => void;
   favs: Set<string>;
   onToggleFav: (id: string) => void;
+  onBack: () => void;
 }) {
   const [activeCategory, setActiveCategory] = useState<Category>("burgers");
   const theme = themeFor(activeCategory);
@@ -370,102 +646,52 @@ function MenuScreen({
 
   return (
     <div
-      className="flex flex-col min-h-full pb-6"
+      className="flex flex-col min-h-full pb-32"
       style={{ background: theme.gradient }}
     >
-      <div className="px-5 pt-12 pb-5">
-        <p className="font-black text-2xl" style={{ color: theme.text }}>
-          {activeCategory === "burgers" ? "Nos Burgers" : "Nos Cocktails"}
-        </p>
-        <p className="text-sm mt-1" style={{ color: theme.textMuted }}>
-          {activeCategory === "burgers"
-            ? "L'art du burger"
-            : "Fraîcheur et saveurs"}
-        </p>
-      </div>
+      <RedHeader
+        theme={theme}
+        title="Menu"
+        left={
+          <RoundButton onClick={onBack} label="Retour">
+            <Icon d={ICONS.back} size={20} strokeWidth={2.6} />
+          </RoundButton>
+        }
+        right={<LogoBubble />}
+      >
+        <div className="mt-6">
+          <p className="font-black text-2xl leading-tight">
+            {activeCategory === "burgers" ? "Nos Burgers" : "Nos Cocktails"}
+          </p>
+          <p className="text-sm mt-1 opacity-90">
+            {activeCategory === "burgers"
+              ? "L'art du burger, la vitesse du fast."
+              : "Fraîcheur et saveurs"}
+          </p>
+        </div>
+      </RedHeader>
 
       {/* Tabs */}
-      <div
-        className="mx-5 mb-6 p-1 rounded-2xl flex"
-        style={{ backgroundColor: theme.card }}
-      >
-        {(["burgers", "drinks"] as Category[]).map((cat) => {
-          const catTheme = themeFor(cat);
-          return (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className="flex-1 py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95"
-              style={{
-                backgroundColor:
-                  activeCategory === cat ? catTheme.primary : "transparent",
-                color: activeCategory === cat ? "#fff" : theme.textMuted,
-              }}
-            >
-              {cat === "burgers" ? "🍔 Burgers" : "🥤 Cocktails"}
-            </button>
-          );
-        })}
+      <div className="mt-6">
+        <CategoryRow
+          active={activeCategory}
+          onChange={setActiveCategory}
+          theme={theme}
+        />
       </div>
 
-      {/* Product List */}
-      <div className="px-5 flex flex-col gap-4">
+      {/* Product grid */}
+      <div className="px-5 mt-2 grid grid-cols-2 gap-x-4">
         {filtered.map((product) => (
-          <div
+          <ProductCard
             key={product.id}
-            className="rounded-2xl overflow-hidden flex flex-col gap-3 p-3"
-            style={{ backgroundColor: theme.card }}
-          >
-            <div
-              className="cursor-pointer w-full h-32 rounded-xl overflow-hidden active:scale-[0.98] transition-transform"
-              style={{ backgroundColor: product.imageBg }}
-              onClick={() => onOpenProduct(product)}
-            >
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-full object-contain bg-black"
-                style={{ objectPosition: "center" }}
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between">
-                <p
-                  className="font-bold text-sm"
-                  style={{ color: theme.text }}
-                >
-                  {product.name}
-                </p>
-                <button
-                  onClick={() => onToggleFav(product.id)}
-                  className="ml-2 text-sm flex-shrink-0"
-                >
-                  {favs.has(product.id) ? "❤️" : "🤍"}
-                </button>
-              </div>
-              <p
-                className="text-xs mt-0.5 line-clamp-2"
-                style={{ color: theme.textMuted }}
-              >
-                {product.shortIngredients}
-              </p>
-              <div className="flex items-center justify-between mt-3">
-                <span
-                  className="font-bold text-sm"
-                  style={{ color: theme.primary }}
-                >
-                  {product.price} DA
-                </span>
-                <button
-                  onClick={() => onAddToCart(product)}
-                  className="text-white text-xs font-bold px-3 py-1.5 rounded-xl active:scale-95 transition-transform"
-                  style={{ backgroundColor: theme.primary }}
-                >
-                  + Ajouter
-                </button>
-              </div>
-            </div>
-          </div>
+            product={product}
+            onAdd={() => onAddToCart(product)}
+            onOpen={() => onOpenProduct(product)}
+            isFav={favs.has(product.id)}
+            onFav={() => onToggleFav(product.id)}
+            theme={theme}
+          />
         ))}
       </div>
     </div>
@@ -473,6 +699,12 @@ function MenuScreen({
 }
 
 // ─── Product Detail Screen ────────────────────────────────────────────────────
+
+const REMOVABLE = [
+  { key: "sauce", label: "Sauce", img: "/ingredients/sauce.png" },
+  { key: "oignon", label: "Oignon", img: "/ingredients/oignon.png" },
+  { key: "tomate", label: "Tomate", img: "/ingredients/tomate.png" },
+];
 
 function ProductDetailScreen({
   product,
@@ -501,31 +733,30 @@ function ProductDetailScreen({
     (supplements.steak ? 100 : 0) +
     (supplements.frites ? 300 : 0);
   const unitPrice = product.price + supplementTotal;
+  const isBurger = product.category === "burgers";
 
   return (
     <div
-      className="flex flex-col min-h-full pb-24"
+      className="flex flex-col min-h-full pb-36"
       style={{ background: theme.gradient }}
     >
-      {/* Back button */}
-      <div className="px-5 pt-12 pb-4 flex items-center gap-3">
-        <button
-          onClick={onBack}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-          style={{ backgroundColor: theme.card }}
-        >
-          <span style={{ color: theme.text }}>←</span>
-        </button>
-        <p className="font-bold text-base" style={{ color: theme.text }}>
-          Détail du produit
-        </p>
-      </div>
+      <RedHeader
+        theme={theme}
+        title="Détails"
+        bottomPadding={isBurger ? "pb-52" : "pb-40"}
+        left={
+          <RoundButton onClick={onBack} label="Retour">
+            <Icon d={ICONS.back} size={20} strokeWidth={2.6} />
+          </RoundButton>
+        }
+        right={<LogoBubble />}
+      />
 
-      {/* Large photo */}
-      <div className="mx-5 mb-5">
+      {/* Photo + removable ingredients, overlapping the red header */}
+      <div className={`px-5 flex gap-3 items-start ${isBurger ? "-mt-48" : "-mt-36"}`}>
         <div
-          className="w-full h-64 rounded-xl overflow-hidden"
-          style={{ backgroundColor: product.imageBg }}
+          className="flex-1 min-w-0 h-64 rounded-3xl overflow-hidden"
+          style={{ backgroundColor: product.imageBg, boxShadow: CARD_SHADOW }}
         >
           <img
             src={product.image}
@@ -538,195 +769,92 @@ function ProductDetailScreen({
             }}
           />
         </div>
-      </div>
 
-      <div className="px-5">
-        {/* Name + Price */}
-        <div className="flex items-start justify-between mb-3">
-          <p
-            className="font-black text-2xl flex-1"
-            style={{ color: theme.text }}
-          >
-            {product.name}
-          </p>
-          <p
-            className="font-black text-xl ml-4"
-            style={{ color: theme.primary }}
-          >
-            {product.price} DA
-          </p>
-        </div>
-
-        {/* Ingredients */}
-        <div
-          className="rounded-2xl p-4 mb-5"
-          style={{ backgroundColor: theme.card }}
-        >
-          <p
-            className="text-xs font-bold tracking-widest uppercase mb-2"
-            style={{ color: theme.primary }}
-          >
-            Ingrédients
-          </p>
-          <p
-            className="text-sm leading-relaxed"
-            style={{ color: theme.textMuted }}
-          >
-            {product.ingredients}
-          </p>
-        </div>
-
-        {/* Customization */}
-        {product.category === "burgers" && (
-          <div
-            className="rounded-2xl p-4 mb-5 border"
-            style={{ borderColor: theme.border, backgroundColor: theme.cardAlt }}
-          >
-            <p
-              className="text-xs font-bold tracking-widest uppercase mb-3"
-              style={{ color: theme.textMuted }}
-            >
-              Personnalisation
+        {isBurger && (
+          <div className="w-[76px] flex flex-col gap-2 flex-shrink-0">
+            <p className="text-white text-[11px] font-bold leading-tight text-center">
+              Retirer des ingrédients
             </p>
-
-            {/* Supplements avec prix */}
-            {[
-              { key: "kiri", label: "Supplément Kiri", price: 50 },
-              { key: "steak", label: "Supplément Steak", price: 100 },
-              { key: "frites", label: "Supplément Barquette de Frites", price: 300 },
-            ].map((opt) => (
-              <div
-                key={opt.key}
-                className="flex items-center justify-between py-2.5 border-b last:border-0"
-                style={{ borderColor: theme.border }}
-              >
-                <div className="flex items-center gap-2">
-                  <p className="text-sm" style={{ color: theme.textMuted }}>
-                    {opt.label}
-                  </p>
-                  <span
-                    className="text-xs font-bold"
-                    style={{ color: theme.primary }}
-                  >
-                    +{opt.price} DA
-                  </span>
-                </div>
+            {REMOVABLE.map((ing) => {
+              const removed = preferences[ing.key] === "sans";
+              return (
                 <button
+                  key={ing.key}
                   onClick={() =>
-                    setSupplements((prev) => ({ ...prev, [opt.key]: !prev[opt.key] }))
+                    setPreferences((prev) => ({
+                      ...prev,
+                      [ing.key]: removed ? "avec" : "sans",
+                    }))
                   }
-                  className="w-11 h-6 rounded-full flex items-center transition-colors flex-shrink-0"
+                  aria-pressed={removed}
+                  aria-label={`${removed ? "Remettre" : "Retirer"} ${ing.label}`}
+                  className="relative rounded-2xl flex flex-col items-center justify-center gap-1 py-2 active:scale-95 transition-all"
                   style={{
-                    backgroundColor: supplements[opt.key]
-                      ? theme.primary
-                      : theme.border,
+                    backgroundColor: theme.card,
+                    boxShadow: CARD_SHADOW,
+                    opacity: removed ? 0.55 : 1,
                   }}
                 >
-                  <div
-                    className="w-5 h-5 rounded-full bg-white transition-transform"
+                  <span
+                    className="absolute top-1 right-1 w-4 h-4 rounded-full flex items-center justify-center"
                     style={{
-                      transform: supplements[opt.key]
-                        ? "translateX(22px)"
-                        : "translateX(2px)",
-                    }}
-                  />
-                </button>
-              </div>
-            ))}
-
-            {/* Options Avec / Sans */}
-            {[
-              { key: "sauce", label: "Choix de sauce" },
-              { key: "oignon", label: "Oignon" },
-              { key: "tomate", label: "Tomate" },
-            ].map((opt) => (
-              <div
-                key={opt.key}
-                className="flex items-center justify-between py-2.5 border-b last:border-0"
-                style={{ borderColor: theme.border }}
-              >
-                <p className="text-sm" style={{ color: theme.textMuted }}>
-                  {opt.label}
-                </p>
-                <div className="flex gap-1.5">
-                  {["avec", "sans"].map((val) => (
-                    <button
-                      key={val}
-                      onClick={() =>
-                        setPreferences((prev) => ({ ...prev, [opt.key]: val }))
-                      }
-                      className="px-3.5 py-1 rounded-lg text-xs font-bold capitalize transition-all active:scale-95"
-                      style={{
-                        backgroundColor:
-                          preferences[opt.key] === val
-                            ? theme.primary
-                            : "transparent",
-                        color:
-                          preferences[opt.key] === val ? "#fff" : theme.textMuted,
-                        border: `1px solid ${
-                          preferences[opt.key] === val
-                            ? theme.primary
-                            : theme.border
-                        }`,
-                      }}
-                    >
-                      {val}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-
-            {/* Niveau d'épice Oui / Non */}
-            <div
-              className="flex items-center justify-between py-2.5"
-            >
-              <p className="text-sm" style={{ color: theme.textMuted }}>
-                Niveau d'épice
-              </p>
-              <div className="flex gap-1.5">
-                {["oui", "non"].map((val) => (
-                  <button
-                    key={val}
-                    onClick={() =>
-                      setPreferences((prev) => ({ ...prev, epice: val }))
-                    }
-                    className="px-3.5 py-1 rounded-lg text-xs font-bold capitalize transition-all active:scale-95"
-                    style={{
-                      backgroundColor:
-                        preferences.epice === val ? theme.primary : "transparent",
-                      color: preferences.epice === val ? "#fff" : theme.textMuted,
-                      border: `1px solid ${
-                        preferences.epice === val ? theme.primary : theme.border
-                      }`,
+                      backgroundColor: removed ? theme.primary : theme.cardAlt,
+                      color: removed ? "#fff" : theme.textMuted,
                     }}
                   >
-                    {val}
-                  </button>
-                ))}
-              </div>
-            </div>
+                    <Icon d={ICONS.close} size={9} strokeWidth={3} />
+                  </span>
+                  <img
+                    src={ing.img}
+                    alt=""
+                    className="w-9 h-9 object-contain"
+                    style={{ filter: removed ? "grayscale(1)" : "none" }}
+                  />
+                  <span
+                    className="text-[10px] font-semibold"
+                    style={{
+                      color: theme.text,
+                      textDecoration: removed ? "line-through" : "none",
+                    }}
+                  >
+                    {ing.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         )}
+      </div>
 
-        {/* Quantity selector */}
-        <div className="flex items-center justify-between mb-6">
-          <p className="font-bold text-sm" style={{ color: theme.text }}>
-            Quantité
-          </p>
+      <div className="px-5 mt-6">
+        {/* Name + short + qty */}
+        <div className="flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <p
+              className="font-black text-2xl leading-tight text-balance"
+              style={{ color: theme.text }}
+            >
+              {product.name}
+            </p>
+            <p className="text-sm mt-1" style={{ color: theme.textMuted }}>
+              {product.shortIngredients}
+            </p>
+          </div>
           <div
-            className="flex items-center gap-4 px-4 py-2 rounded-2xl"
-            style={{ backgroundColor: theme.card }}
+            className="flex items-center gap-3 px-2 py-1.5 rounded-full flex-shrink-0"
+            style={{ backgroundColor: theme.card, boxShadow: CARD_SHADOW }}
           >
             <button
               onClick={() => setQty(Math.max(1, qty - 1))}
-              className="w-7 h-7 rounded-xl flex items-center justify-center font-bold active:scale-90 transition-transform"
+              aria-label="Diminuer la quantité"
+              className="w-7 h-7 rounded-full flex items-center justify-center active:scale-90 transition-transform"
               style={{
-                backgroundColor: qty === 1 ? theme.border : theme.primary,
-                color: "#fff",
+                border: `2px solid ${theme.primary}`,
+                color: theme.primary,
+                opacity: qty === 1 ? 0.4 : 1,
               }}
             >
-              −
+              <Icon d={ICONS.minus} size={14} strokeWidth={3} />
             </button>
             <span
               className="font-bold text-base w-4 text-center"
@@ -736,30 +864,144 @@ function ProductDetailScreen({
             </span>
             <button
               onClick={() => setQty(qty + 1)}
-              className="w-7 h-7 rounded-xl flex items-center justify-center font-bold text-white active:scale-90 transition-transform"
+              aria-label="Augmenter la quantité"
+              className="w-7 h-7 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform"
               style={{ backgroundColor: theme.primary }}
             >
-              +
+              <Icon d={ICONS.plus} size={14} strokeWidth={3} />
             </button>
           </div>
         </div>
+
+        {/* Full description */}
+        <p
+          className="text-sm leading-relaxed mt-5"
+          style={{ color: theme.textMuted }}
+        >
+          {product.ingredients}
+        </p>
+
+        {/* Customization (burgers only) */}
+        {isBurger && (
+          <div className="mt-6 flex flex-col gap-5">
+            <div>
+              <p
+                className="text-xs font-bold tracking-widest uppercase mb-3"
+                style={{ color: theme.text }}
+              >
+                Suppléments
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { key: "kiri", label: "Kiri", price: 50 },
+                  { key: "steak", label: "Steak", price: 100 },
+                  { key: "frites", label: "Barquette de frites", price: 300 },
+                ].map((opt) => {
+                  const on = supplements[opt.key];
+                  return (
+                    <button
+                      key={opt.key}
+                      onClick={() =>
+                        setSupplements((prev) => ({
+                          ...prev,
+                          [opt.key]: !prev[opt.key],
+                        }))
+                      }
+                      aria-pressed={on}
+                      className="flex items-center gap-2 pl-3 pr-1.5 py-1.5 rounded-full text-sm font-semibold active:scale-95 transition-all"
+                      style={{
+                        backgroundColor: on ? theme.primary : theme.card,
+                        color: on ? "#fff" : theme.text,
+                        boxShadow: on ? `0 6px 14px ${theme.primary}55` : "0 2px 8px rgba(0,0,0,0.06)",
+                      }}
+                    >
+                      <span>{opt.label}</span>
+                      <span
+                        className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                        style={{
+                          backgroundColor: on ? "rgba(255,255,255,0.22)" : theme.cardAlt,
+                          color: on ? "#fff" : theme.primary,
+                        }}
+                      >
+                        +{opt.price} DA
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <p
+                className="text-xs font-bold tracking-widest uppercase"
+                style={{ color: theme.text }}
+              >
+                Épicé
+              </p>
+              <div
+                className="flex gap-1 p-1 rounded-full"
+                style={{ backgroundColor: theme.card, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
+              >
+                {["oui", "non"].map((val) => (
+                  <button
+                    key={val}
+                    onClick={() =>
+                      setPreferences((prev) => ({ ...prev, epice: val }))
+                    }
+                    className="px-4 py-1 rounded-full text-xs font-bold capitalize transition-all active:scale-95"
+                    style={{
+                      backgroundColor:
+                        preferences.epice === val ? theme.primary : "transparent",
+                      color: preferences.epice === val ? "#fff" : theme.textMuted,
+                    }}
+                  >
+                    {val}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Add to cart button */}
-      <div
-        className="absolute bottom-0 left-0 right-0 px-5 pb-8 pt-4"
-        style={{
-          background: theme.gradient,
-          borderTop: `1px solid ${theme.border}`,
-        }}
-      >
-        <button
-          onClick={() => onAddToCart({ ...product, price: unitPrice }, qty)}
-          className="w-full py-4 rounded-2xl text-white font-bold text-base active:scale-[0.98] transition-transform"
-          style={{ backgroundColor: theme.primary }}
-        >
-          Ajouter au panier • {unitPrice * qty} DA
-        </button>
+      {/* Bottom bar: total + order */}
+      <div className="absolute bottom-0 left-0 right-0">
+        <div className="px-5 pb-3 flex justify-center relative z-10">
+          <button
+            onClick={() => onAddToCart({ ...product, price: unitPrice }, qty)}
+            className="w-full flex items-center gap-3 pl-2 pr-5 py-2 rounded-full bg-white active:scale-[0.98] transition-transform"
+            style={{ boxShadow: "0 10px 30px rgba(0,0,0,0.22)" }}
+          >
+            <span
+              className="w-12 h-12 rounded-full flex items-center justify-center text-white flex-shrink-0"
+              style={{ backgroundColor: theme.primary }}
+            >
+              <Icon d={ICONS.basket} size={22} />
+            </span>
+            <span className="flex-1 text-left leading-tight">
+              <span className="block text-sm" style={{ color: theme.textMuted }}>
+                Total :{" "}
+                <strong style={{ color: theme.primary }}>{unitPrice * qty} DA</strong>
+              </span>
+              <span className="block font-black text-base" style={{ color: theme.text }}>
+                COMMANDER
+              </span>
+            </span>
+            <span
+              className="text-xs font-bold px-3 py-1.5 rounded-full text-white"
+              style={{ backgroundColor: theme.primary }}
+            >
+              Ajouter
+            </span>
+          </button>
+        </div>
+        <div
+          className="h-10"
+          style={{
+            backgroundColor: theme.primary,
+            borderRadius: "50% 50% 0 0 / 30px 30px 0 0",
+          }}
+        />
       </div>
     </div>
   );
@@ -787,33 +1029,32 @@ function CartScreen({
 
   return (
     <div
-      className="flex flex-col min-h-full pb-6"
+      className="flex flex-col min-h-full pb-32"
       style={{ background: theme.gradient }}
     >
-      <div className="px-5 pt-12 pb-5 flex items-center gap-3">
-        <button
-          onClick={onBack}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-          style={{ backgroundColor: theme.cardAlt }}
-        >
-          <span style={{ color: theme.text }}>←</span>
-        </button>
-        <div>
-          <p className="font-black text-2xl" style={{ color: theme.text }}>
-            Mon Panier
-          </p>
-          <p className="text-sm mt-0.5" style={{ color: theme.textMuted }}>
-            {cart.length === 0
-              ? "Votre panier est vide"
-              : `${cart.reduce((s, i) => s + i.quantity, 0)} article(s)`}
-          </p>
-        </div>
-      </div>
+      <RedHeader
+        theme={theme}
+        title="Mon Panier"
+        left={
+          <RoundButton onClick={onBack} label="Retour">
+            <Icon d={ICONS.back} size={20} strokeWidth={2.6} />
+          </RoundButton>
+        }
+        right={<LogoBubble />}
+      >
+        <p className="mt-5 text-sm opacity-90">
+          {cart.length === 0
+            ? "Votre panier est vide"
+            : `${cart.reduce((s, i) => s + i.quantity, 0)} article(s)`}
+        </p>
+      </RedHeader>
 
       {cart.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center gap-4 px-5">
-          <span className="text-6xl opacity-20">🛒</span>
-          <p className="text-center" style={{ color: theme.textMuted }}>
+        <div className="flex-1 flex flex-col items-center justify-center gap-4 px-5 pt-16">
+          <span style={{ color: theme.border }}>
+            <Icon d={ICONS.basket} size={72} strokeWidth={1.5} />
+          </span>
+          <p className="text-center text-sm" style={{ color: theme.textMuted }}>
             Votre panier est vide.
             <br />
             Ajoutez des produits pour commander.
@@ -821,15 +1062,15 @@ function CartScreen({
         </div>
       ) : (
         <>
-          <div className="px-5 flex flex-col gap-3">
+          <div className="px-5 mt-6 flex flex-col gap-3">
             {cart.map((item) => (
               <div
                 key={item.product.id}
-                className="rounded-2xl p-3 flex items-center gap-3"
-                style={{ backgroundColor: theme.cardAlt }}
+                className="rounded-3xl p-3 flex items-center gap-3"
+                style={{ backgroundColor: theme.card, boxShadow: CARD_SHADOW }}
               >
                 <div
-                  className="w-16 h-16 rounded-xl flex-shrink-0 overflow-hidden"
+                  className="w-20 h-20 rounded-2xl flex-shrink-0 overflow-hidden"
                   style={{ backgroundColor: item.product.imageBg }}
                 >
                   <img
@@ -842,61 +1083,66 @@ function CartScreen({
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p
-                    className="font-bold text-sm"
-                    style={{ color: theme.text }}
-                  >
-                    {item.product.name}
-                  </p>
+                  <div className="flex items-start justify-between gap-2">
+                    <p
+                      className="font-bold text-sm leading-tight"
+                      style={{ color: theme.text }}
+                    >
+                      {item.product.name}
+                    </p>
+                    <button
+                      onClick={() => onRemove(item.product.id)}
+                      aria-label={`Retirer ${item.product.name}`}
+                      className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform"
+                      style={{ backgroundColor: theme.cardAlt, color: theme.textMuted }}
+                    >
+                      <Icon d={ICONS.close} size={11} strokeWidth={3} />
+                    </button>
+                  </div>
                   <p className="text-xs mt-0.5" style={{ color: theme.textMuted }}>
                     {item.product.price} DA / unité
                   </p>
-                  <div className="flex items-center gap-3 mt-2">
-                    <button
-                      onClick={() =>
-                        item.quantity === 1
-                          ? onRemove(item.product.id)
-                          : onUpdateQty(item.product.id, item.quantity - 1)
-                      }
-                      className="w-6 h-6 rounded-lg flex items-center justify-center font-bold text-sm active:scale-90 transition-transform"
-                      style={{
-                        backgroundColor: theme.border,
-                        color: theme.text,
-                      }}
+                  <div className="flex items-center justify-between mt-2">
+                    <div
+                      className="flex items-center gap-2 px-1.5 py-1 rounded-full"
+                      style={{ backgroundColor: theme.cardAlt }}
                     >
-                      −
-                    </button>
-                    <span
+                      <button
+                        onClick={() =>
+                          item.quantity === 1
+                            ? onRemove(item.product.id)
+                            : onUpdateQty(item.product.id, item.quantity - 1)
+                        }
+                        aria-label="Diminuer la quantité"
+                        className="w-6 h-6 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+                        style={{ border: `2px solid ${theme.primary}`, color: theme.primary }}
+                      >
+                        <Icon d={ICONS.minus} size={11} strokeWidth={3} />
+                      </button>
+                      <span
+                        className="font-bold text-sm w-4 text-center"
+                        style={{ color: theme.text }}
+                      >
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() =>
+                          onUpdateQty(item.product.id, item.quantity + 1)
+                        }
+                        aria-label="Augmenter la quantité"
+                        className="w-6 h-6 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform"
+                        style={{ backgroundColor: theme.primary }}
+                      >
+                        <Icon d={ICONS.plus} size={11} strokeWidth={3} />
+                      </button>
+                    </div>
+                    <p
                       className="font-bold text-sm"
-                      style={{ color: theme.text }}
+                      style={{ color: theme.primary }}
                     >
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() =>
-                        onUpdateQty(item.product.id, item.quantity + 1)
-                      }
-                      className="w-6 h-6 rounded-lg flex items-center justify-center font-bold text-sm text-white active:scale-90 transition-transform"
-                      style={{ backgroundColor: theme.primary }}
-                    >
-                      +
-                    </button>
+                      {item.product.price * item.quantity} DA
+                    </p>
                   </div>
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  <button
-                    onClick={() => onRemove(item.product.id)}
-                    className="text-xs px-2 py-1 rounded-lg active:scale-90 transition-transform"
-                    style={{ backgroundColor: theme.border, color: theme.textMuted }}
-                  >
-                    ✕
-                  </button>
-                  <p
-                    className="font-bold text-sm"
-                    style={{ color: theme.primary }}
-                  >
-                    {item.product.price * item.quantity} DA
-                  </p>
                 </div>
               </div>
             ))}
@@ -904,10 +1150,10 @@ function CartScreen({
 
           {/* Summary */}
           <div
-            className="mx-5 mt-5 rounded-2xl p-4"
-            style={{ backgroundColor: theme.cardAlt }}
+            className="mx-5 mt-5 rounded-3xl p-5"
+            style={{ backgroundColor: theme.card, boxShadow: CARD_SHADOW }}
           >
-            <div className="flex justify-between py-2">
+            <div className="flex justify-between py-1.5">
               <p className="text-sm" style={{ color: theme.textMuted }}>
                 Sous-total
               </p>
@@ -916,7 +1162,7 @@ function CartScreen({
               </p>
             </div>
             <div
-              className="flex justify-between py-2 border-b"
+              className="flex justify-between py-1.5 border-b border-dashed"
               style={{ borderColor: theme.border }}
             >
               <p className="text-sm" style={{ color: theme.textMuted }}>
@@ -926,12 +1172,12 @@ function CartScreen({
                 {delivery} DA
               </p>
             </div>
-            <div className="flex justify-between pt-3">
+            <div className="flex justify-between items-center pt-3">
               <p className="font-bold" style={{ color: theme.text }}>
-                TOTAL
+                Total
               </p>
               <p
-                className="font-black text-lg"
+                className="font-black text-xl"
                 style={{ color: theme.primary }}
               >
                 {total} DA
@@ -943,8 +1189,11 @@ function CartScreen({
           <div className="px-5 mt-5">
             <button
               onClick={onCheckout}
-              className="w-full py-4 rounded-2xl text-white font-bold text-base active:scale-[0.98] transition-transform"
-              style={{ backgroundColor: theme.primary }}
+              className="w-full py-4 rounded-full text-white font-bold text-base active:scale-[0.98] transition-transform"
+              style={{
+                backgroundColor: theme.primary,
+                boxShadow: `0 10px 24px ${theme.primary}66`,
+              }}
             >
               Commander →
             </button>
@@ -1000,31 +1249,93 @@ function CheckoutScreen({
     (deliveryMode === "retrait" || address.trim() !== "") &&
     !submitting;
 
+  const sectionTitle = "text-xs font-bold tracking-widest uppercase mb-4";
+
+  function OptionRow({
+    selected,
+    onClick,
+    icon,
+    label,
+    sub,
+    disabled,
+  }: {
+    selected: boolean;
+    onClick: () => void;
+    icon: string[];
+    label: string;
+    sub: string;
+    disabled?: boolean;
+  }) {
+    return (
+      <button
+        onClick={onClick}
+        disabled={disabled}
+        className="w-full flex items-center gap-3 p-3 rounded-2xl mb-2 last:mb-0 active:scale-[0.98] transition-transform"
+        style={{
+          backgroundColor: selected ? `${theme.primary}12` : theme.cardAlt,
+          border: `1.5px solid ${selected ? theme.primary : "transparent"}`,
+          opacity: disabled ? 0.4 : 1,
+        }}
+      >
+        <span
+          className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+          style={{
+            backgroundColor: selected ? theme.primary : theme.card,
+            color: selected ? "#fff" : theme.textMuted,
+          }}
+        >
+          <Icon d={icon} size={20} />
+        </span>
+        <div className="flex-1 text-left">
+          <p className="text-sm font-semibold" style={{ color: theme.text }}>
+            {label}
+          </p>
+          <p className="text-xs" style={{ color: theme.textMuted }}>
+            {sub}
+          </p>
+        </div>
+        <div
+          className="w-5 h-5 rounded-full border-2 flex items-center justify-center"
+          style={{ borderColor: selected ? theme.primary : theme.border }}
+        >
+          {selected && (
+            <div
+              className="w-2.5 h-2.5 rounded-full"
+              style={{ backgroundColor: theme.primary }}
+            />
+          )}
+        </div>
+      </button>
+    );
+  }
+
   return (
     <div
-      className="flex flex-col min-h-full pb-28"
+      className="flex flex-col min-h-full pb-32"
       style={{ background: theme.gradient }}
     >
-      <div className="px-5 pt-12 pb-5 flex items-center gap-3">
-        <button
-          onClick={onBack}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-          style={{ backgroundColor: theme.cardAlt }}
-        >
-          <span style={{ color: theme.text }}>←</span>
-        </button>
-        <p className="font-black text-2xl" style={{ color: theme.text }}>
-          Commander
+      <RedHeader
+        theme={theme}
+        title="Commander"
+        left={
+          <RoundButton onClick={onBack} label="Retour">
+            <Icon d={ICONS.back} size={20} strokeWidth={2.6} />
+          </RoundButton>
+        }
+        right={<LogoBubble />}
+      >
+        <p className="mt-5 text-sm opacity-90">
+          Encore une étape avant de déguster.
         </p>
-      </div>
+      </RedHeader>
 
-      <div className="px-5 flex flex-col gap-5">
+      <div className="px-5 mt-6 flex flex-col gap-4">
         {/* Customer info */}
-        <div className="rounded-2xl p-4" style={{ backgroundColor: theme.cardAlt }}>
-          <p
-            className="text-xs font-bold tracking-widest uppercase mb-4"
-            style={{ color: theme.primary }}
-          >
+        <div
+          className="rounded-3xl p-5"
+          style={{ backgroundColor: theme.card, boxShadow: CARD_SHADOW }}
+        >
+          <p className={sectionTitle} style={{ color: theme.primary }}>
             Vos informations
           </p>
           <input
@@ -1032,7 +1343,7 @@ function CheckoutScreen({
             placeholder="Nom"
             value={nom}
             onChange={(e) => setNom(e.target.value)}
-            className="w-full px-3 py-3 rounded-xl text-sm outline-none mb-3"
+            className="w-full px-4 py-3 rounded-full text-sm outline-none mb-3"
             style={fieldStyle}
           />
           <input
@@ -1040,7 +1351,7 @@ function CheckoutScreen({
             placeholder="Prénom"
             value={prenom}
             onChange={(e) => setPrenom(e.target.value)}
-            className="w-full px-3 py-3 rounded-xl text-sm outline-none mb-3"
+            className="w-full px-4 py-3 rounded-full text-sm outline-none mb-3"
             style={fieldStyle}
           />
           <input
@@ -1048,7 +1359,7 @@ function CheckoutScreen({
             placeholder="Numéro de téléphone"
             value={tel}
             onChange={(e) => setTel(e.target.value)}
-            className="w-full px-3 py-3 rounded-xl text-sm outline-none mb-3"
+            className="w-full px-4 py-3 rounded-full text-sm outline-none mb-3"
             style={fieldStyle}
           />
           <input
@@ -1056,119 +1367,66 @@ function CheckoutScreen({
             placeholder="Adresse de livraison"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            className="w-full px-3 py-3 rounded-xl text-sm outline-none"
+            className="w-full px-4 py-3 rounded-full text-sm outline-none"
             style={fieldStyle}
           />
         </div>
 
         {/* Delivery mode */}
-        <div className="rounded-2xl p-4" style={{ backgroundColor: theme.cardAlt }}>
-          <p
-            className="text-xs font-bold tracking-widest uppercase mb-4"
-            style={{ color: theme.primary }}
-          >
+        <div
+          className="rounded-3xl p-5"
+          style={{ backgroundColor: theme.card, boxShadow: CARD_SHADOW }}
+        >
+          <p className={sectionTitle} style={{ color: theme.primary }}>
             Mode de livraison
           </p>
-          {[
-            { id: "livraison", label: "Livraison à domicile", sub: "+150 DA", icon: "🚴" },
-            { id: "retrait", label: "Retrait au restaurant", sub: "Gratuit", icon: "🏪" },
-          ].map((opt) => (
-            <button
-              key={opt.id}
-              onClick={() => setDeliveryMode(opt.id)}
-              className="w-full flex items-center gap-3 p-3 rounded-xl mb-2 last:mb-0 active:scale-[0.98] transition-transform"
-              style={{
-                backgroundColor:
-                  deliveryMode === opt.id
-                    ? `${theme.primary}22`
-                    : theme.card,
-                border: `1px solid ${deliveryMode === opt.id ? theme.primary : theme.border}`,
-              }}
-            >
-              <span className="text-xl">{opt.icon}</span>
-              <div className="flex-1 text-left">
-                <p className="text-sm font-semibold" style={{ color: theme.text }}>
-                  {opt.label}
-                </p>
-                <p className="text-xs" style={{ color: theme.textMuted }}>
-                  {opt.sub}
-                </p>
-              </div>
-              <div
-                className="w-5 h-5 rounded-full border-2 flex items-center justify-center"
-                style={{
-                  borderColor: deliveryMode === opt.id ? theme.primary : theme.border,
-                }}
-              >
-                {deliveryMode === opt.id && (
-                  <div
-                    className="w-2.5 h-2.5 rounded-full"
-                    style={{ backgroundColor: theme.primary }}
-                  />
-                )}
-              </div>
-            </button>
-          ))}
+          <OptionRow
+            selected={deliveryMode === "livraison"}
+            onClick={() => setDeliveryMode("livraison")}
+            icon={ICONS.bike}
+            label="Livraison à domicile"
+            sub="+150 DA"
+          />
+          <OptionRow
+            selected={deliveryMode === "retrait"}
+            onClick={() => setDeliveryMode("retrait")}
+            icon={ICONS.store}
+            label="Retrait au restaurant"
+            sub="Gratuit"
+          />
         </div>
 
         {/* Payment */}
-        <div className="rounded-2xl p-4" style={{ backgroundColor: theme.cardAlt }}>
-          <p
-            className="text-xs font-bold tracking-widest uppercase mb-4"
-            style={{ color: theme.primary }}
-          >
+        <div
+          className="rounded-3xl p-5"
+          style={{ backgroundColor: theme.card, boxShadow: CARD_SHADOW }}
+        >
+          <p className={sectionTitle} style={{ color: theme.primary }}>
             Paiement
           </p>
-          {[
-            { id: "livraison", label: "Paiement à la livraison", sub: "Cash ou carte", icon: "💵" },
-            { id: "online", label: "Paiement en ligne", sub: "Bientôt disponible", icon: "💳", disabled: true },
-          ].map((opt) => (
-            <button
-              key={opt.id}
-              onClick={() => !opt.disabled && setPaymentMode(opt.id)}
-              disabled={opt.disabled}
-              className="w-full flex items-center gap-3 p-3 rounded-xl mb-2 last:mb-0"
-              style={{
-                backgroundColor:
-                  paymentMode === opt.id
-                    ? `${theme.primary}22`
-                    : theme.card,
-                border: `1px solid ${paymentMode === opt.id ? theme.primary : theme.border}`,
-                opacity: opt.disabled ? 0.4 : 1,
-              }}
-            >
-              <span className="text-xl">{opt.icon}</span>
-              <div className="flex-1 text-left">
-                <p className="text-sm font-semibold" style={{ color: theme.text }}>
-                  {opt.label}
-                </p>
-                <p className="text-xs" style={{ color: theme.textMuted }}>
-                  {opt.sub}
-                </p>
-              </div>
-              <div
-                className="w-5 h-5 rounded-full border-2 flex items-center justify-center"
-                style={{
-                  borderColor: paymentMode === opt.id ? theme.primary : theme.border,
-                }}
-              >
-                {paymentMode === opt.id && (
-                  <div
-                    className="w-2.5 h-2.5 rounded-full"
-                    style={{ backgroundColor: theme.primary }}
-                  />
-                )}
-              </div>
-            </button>
-          ))}
+          <OptionRow
+            selected={paymentMode === "livraison"}
+            onClick={() => setPaymentMode("livraison")}
+            icon={ICONS.cash}
+            label="Paiement à la livraison"
+            sub="Cash ou carte"
+          />
+          <OptionRow
+            selected={paymentMode === "online"}
+            onClick={() => {}}
+            icon={ICONS.card}
+            label="Paiement en ligne"
+            sub="Bientôt disponible"
+            disabled
+          />
         </div>
 
         {/* Order summary */}
-        <div className="rounded-2xl p-4" style={{ backgroundColor: theme.cardAlt }}>
-          <p
-            className="text-xs font-bold tracking-widest uppercase mb-3"
-            style={{ color: theme.primary }}
-          >
+        <div
+          className="rounded-3xl p-5"
+          style={{ backgroundColor: theme.card, boxShadow: CARD_SHADOW }}
+        >
+          <p className={sectionTitle} style={{ color: theme.primary }}>
             Récapitulatif
           </p>
           {cart.map((item) => (
@@ -1181,34 +1439,44 @@ function CheckoutScreen({
               </p>
             </div>
           ))}
-          <div className="border-t mt-2 pt-2" style={{ borderColor: theme.border }}>
-            <div className="flex justify-between">
-              <p className="font-bold" style={{ color: theme.text }}>
-                TOTAL
-              </p>
-              <p className="font-black" style={{ color: theme.primary }}>
-                {total} DA
-              </p>
-            </div>
+          <div
+            className="border-t border-dashed mt-2 pt-3 flex justify-between items-center"
+            style={{ borderColor: theme.border }}
+          >
+            <p className="font-bold" style={{ color: theme.text }}>
+              Total
+            </p>
+            <p className="font-black text-xl" style={{ color: theme.primary }}>
+              {total} DA
+            </p>
           </div>
         </div>
       </div>
 
       {/* Confirm button */}
-      <div
-        className="absolute bottom-0 left-0 right-0 px-5 pb-8 pt-4"
-        style={{ background: theme.gradient, borderTop: `1px solid ${theme.border}` }}
-      >
-        <button
-          onClick={() =>
-            onConfirm({ nom, prenom, tel, address, deliveryMode, paymentMode })
-          }
-          disabled={!canSubmit}
-          className="w-full py-4 rounded-2xl text-white font-bold text-base active:scale-[0.98] transition-transform disabled:opacity-50"
-          style={{ backgroundColor: theme.primary }}
-        >
-          {submitting ? "Envoi en cours..." : "Confirmer la commande →"}
-        </button>
+      <div className="absolute bottom-0 left-0 right-0">
+        <div className="px-5 pb-3 relative z-10">
+          <button
+            onClick={() =>
+              onConfirm({ nom, prenom, tel, address, deliveryMode, paymentMode })
+            }
+            disabled={!canSubmit}
+            className="w-full py-4 rounded-full text-white font-bold text-base active:scale-[0.98] transition-transform disabled:opacity-50"
+            style={{
+              backgroundColor: theme.primary,
+              boxShadow: "0 10px 30px rgba(0,0,0,0.22)",
+            }}
+          >
+            {submitting ? "Envoi en cours..." : "Confirmer la commande →"}
+          </button>
+        </div>
+        <div
+          className="h-10"
+          style={{
+            backgroundColor: theme.primary,
+            borderRadius: "50% 50% 0 0 / 30px 30px 0 0",
+          }}
+        />
       </div>
     </div>
   );
@@ -1229,33 +1497,34 @@ function ConfirmationScreen({
 
   return (
     <div
-      className="flex flex-col min-h-full pb-24"
+      className="flex flex-col min-h-full pb-10"
       style={{ background: theme.gradient }}
     >
-      <div className="px-5 pt-12 pb-8 text-center">
-        <div
-          className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-          style={{ backgroundColor: `${theme.primary}22` }}
-        >
-          <span className="text-3xl">✅</span>
+      <RedHeader theme={theme} bottomPadding="pb-10" right={<LogoBubble />}>
+        <div className="mt-6 text-center">
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-white"
+            style={{ color: theme.primary, boxShadow: "0 6px 16px rgba(0,0,0,0.18)" }}
+          >
+            <Icon d={ICONS.check} size={30} strokeWidth={3} />
+          </div>
+          <p className="font-black text-2xl">Commande confirmée !</p>
+          <p className="text-sm mt-1 opacity-90">Merci pour votre commande.</p>
+          <div
+            className="inline-block mt-3 px-4 py-1.5 rounded-full text-xs font-bold bg-white"
+            style={{ color: theme.primary }}
+          >
+            Commande #{order.id}
+          </div>
         </div>
-        <p className="font-black text-2xl" style={{ color: theme.text }}>
-          Commande confirmée !
-        </p>
-        <p className="text-sm mt-2" style={{ color: theme.textMuted }}>
-          Merci pour votre commande.
-        </p>
-        <div
-          className="inline-block mt-3 px-4 py-1.5 rounded-full text-xs font-bold"
-          style={{ backgroundColor: `${theme.primary}22`, color: theme.primary }}
-        >
-          Commande #{order.id}
-        </div>
-      </div>
+      </RedHeader>
 
-      <div className="px-5 flex flex-col gap-4">
+      <div className="px-5 mt-6 flex flex-col gap-4">
         {/* Status tracker */}
-        <div className="rounded-2xl p-5" style={{ backgroundColor: theme.cardAlt }}>
+        <div
+          className="rounded-3xl p-5"
+          style={{ backgroundColor: theme.card, boxShadow: CARD_SHADOW }}
+        >
           <p
             className="text-xs font-bold tracking-widest uppercase mb-5"
             style={{ color: theme.primary }}
@@ -1268,11 +1537,16 @@ function ConfirmationScreen({
                 <div
                   className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
                   style={{
-                    backgroundColor: i <= currentStep ? theme.primary : theme.border,
+                    backgroundColor: i <= currentStep ? theme.primary : theme.cardAlt,
                     color: i <= currentStep ? "#fff" : theme.textMuted,
+                    border: i <= currentStep ? "none" : `1.5px solid ${theme.border}`,
                   }}
                 >
-                  {i < currentStep ? "✓" : i === currentStep ? "●" : "○"}
+                  {i < currentStep ? (
+                    <Icon d={ICONS.check} size={12} strokeWidth={3} />
+                  ) : i === currentStep ? (
+                    <span className="w-2 h-2 rounded-full bg-white" />
+                  ) : null}
                 </div>
                 {i < steps.length - 1 && (
                   <div
@@ -1293,7 +1567,7 @@ function ConfirmationScreen({
                   {step}
                 </p>
                 {i === currentStep && (
-                  <p className="text-xs mt-0.5" style={{ color: theme.textMuted }}>
+                  <p className="text-xs mt-0.5" style={{ color: theme.primary }}>
                     En cours...
                   </p>
                 )}
@@ -1303,7 +1577,10 @@ function ConfirmationScreen({
         </div>
 
         {/* Order details */}
-        <div className="rounded-2xl p-4" style={{ backgroundColor: theme.cardAlt }}>
+        <div
+          className="rounded-3xl p-5"
+          style={{ backgroundColor: theme.card, boxShadow: CARD_SHADOW }}
+        >
           <p
             className="text-xs font-bold tracking-widest uppercase mb-3"
             style={{ color: theme.primary }}
@@ -1321,28 +1598,35 @@ function ConfirmationScreen({
             </div>
           ))}
           <div
-            className="border-t mt-2 pt-2 flex justify-between"
+            className="border-t border-dashed mt-2 pt-3 flex justify-between items-center"
             style={{ borderColor: theme.border }}
           >
             <p className="font-bold" style={{ color: theme.text }}>
-              TOTAL
+              Total
             </p>
-            <p className="font-black" style={{ color: theme.primary }}>
+            <p className="font-black text-xl" style={{ color: theme.primary }}>
               {order.total} DA
             </p>
           </div>
         </div>
 
         {/* Delivery info */}
-        <div className="rounded-2xl p-4" style={{ backgroundColor: theme.cardAlt }}>
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-xl">📍</span>
+        <div
+          className="rounded-3xl p-5 flex flex-col gap-3"
+          style={{ backgroundColor: theme.card, boxShadow: CARD_SHADOW }}
+        >
+          <div className="flex items-center gap-3">
+            <span style={{ color: theme.primary }}>
+              <Icon d={ICONS.pin} size={20} />
+            </span>
             <p className="text-sm font-semibold" style={{ color: theme.text }}>
               {order.address || "Retrait au restaurant"}
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xl">⏱</span>
+            <span style={{ color: theme.primary }}>
+              <Icon d={ICONS.clock} size={20} />
+            </span>
             <p className="text-sm" style={{ color: theme.textMuted }}>
               Temps estimé :{" "}
               <strong style={{ color: theme.text }}>25–35 min</strong>
@@ -1352,8 +1636,11 @@ function ConfirmationScreen({
 
         <button
           onClick={onHome}
-          className="w-full py-4 rounded-2xl font-bold text-base active:scale-[0.98] transition-transform"
-          style={{ backgroundColor: theme.cardAlt, color: theme.primary }}
+          className="w-full py-4 rounded-full font-bold text-base text-white active:scale-[0.98] transition-transform"
+          style={{
+            backgroundColor: theme.primary,
+            boxShadow: `0 10px 24px ${theme.primary}66`,
+          }}
         >
           Retour à l'accueil
         </button>
@@ -1469,71 +1756,85 @@ export default function App() {
     setScreen("confirmation");
   }
 
+  const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
+  const showNav = screen === "home" || screen === "menu" || screen === "cart";
+
   return (
     <div
-      className="relative w-full h-full overflow-hidden"
-      style={{
-        background: "linear-gradient(135deg, #d4b17d 0%, #a84435 100%)",
-        fontFamily: "'Outfit', sans-serif",
-      }}
+      className="w-full h-full flex justify-center"
+      style={{ background: "#2b2b2b", fontFamily: "'Outfit', sans-serif" }}
     >
       <div
-        className="w-full h-full overflow-y-auto"
-        style={{ scrollbarWidth: "none" }}
+        className="relative w-full h-full max-w-[430px] overflow-hidden"
+        style={{ background: BURGER_THEME.gradient }}
       >
-        {screen === "home" && (
-          <HomeScreen
+        <div
+          className="w-full h-full overflow-y-auto"
+          style={{ scrollbarWidth: "none" }}
+        >
+          {screen === "home" && (
+            <HomeScreen
+              onNav={goNav}
+              cart={cart}
+              onAddToCart={addToCart}
+              onOpenProduct={openProduct}
+              favs={favs}
+              onToggleFav={toggleFav}
+            />
+          )}
+          {screen === "menu" && (
+            <MenuScreen
+              onAddToCart={addToCart}
+              onOpenProduct={openProduct}
+              favs={favs}
+              onToggleFav={toggleFav}
+              onBack={() => setScreen("home")}
+            />
+          )}
+          {screen === "cart" && (
+            <CartScreen
+              cart={cart}
+              onUpdateQty={updateQty}
+              onRemove={removeFromCart}
+              onCheckout={() => setScreen("checkout")}
+              onBack={() => setScreen("home")}
+            />
+          )}
+          {screen === "product" && selectedProduct && (
+            <ProductDetailScreen
+              product={selectedProduct}
+              onBack={() => setScreen(prevScreen)}
+              onAddToCart={(p, qty) => {
+                addToCart(p, qty);
+                setScreen(prevScreen);
+              }}
+            />
+          )}
+          {screen === "checkout" && (
+            <CheckoutScreen
+              cart={cart}
+              onConfirm={handleCheckout}
+              onBack={() => setScreen("cart")}
+              submitting={submitting}
+            />
+          )}
+          {screen === "confirmation" && currentOrder && (
+            <ConfirmationScreen
+              order={currentOrder}
+              onHome={() => setScreen("home")}
+            />
+          )}
+        </div>
+
+        {showNav && (
+          <BottomNav
+            active={screen}
             onNav={goNav}
-            cart={cart}
-            onAddToCart={addToCart}
-            onOpenProduct={openProduct}
-            favs={favs}
-            onToggleFav={toggleFav}
-          />
-        )}
-        {screen === "menu" && (
-          <MenuScreen
-            onAddToCart={addToCart}
-            onOpenProduct={openProduct}
-            favs={favs}
-            onToggleFav={toggleFav}
-          />
-        )}
-        {screen === "cart" && (
-          <CartScreen
-            cart={cart}
-            onUpdateQty={updateQty}
-            onRemove={removeFromCart}
-            onCheckout={() => setScreen("checkout")}
-            onBack={() => setScreen("home")}
-          />
-        )}
-        {screen === "product" && selectedProduct && (
-          <ProductDetailScreen
-            product={selectedProduct}
-            onBack={() => setScreen(prevScreen)}
-            onAddToCart={(p, qty) => {
-              addToCart(p, qty);
-              setScreen(prevScreen);
-            }}
-          />
-        )}
-        {screen === "checkout" && (
-          <CheckoutScreen
-            cart={cart}
-            onConfirm={handleCheckout}
-            onBack={() => setScreen("cart")}
-            submitting={submitting}
-          />
-        )}
-        {screen === "confirmation" && currentOrder && (
-          <ConfirmationScreen
-            order={currentOrder}
-            onHome={() => setScreen("home")}
+            cartCount={cartCount}
+            theme={BURGER_THEME}
           />
         )}
       </div>
-
     </div>
   );
 }

@@ -4,23 +4,23 @@
 
 @theme inline {
   --font-sans: 'Outfit', sans-serif;
-  --color-brand: #a84435;
-  --color-brand-dark: #82302b;
-  --color-surface: #d4b17d;
-  --color-card: #f0d7af;
-  --color-card2: #c98e68;
-  --color-muted: #b47d62;
-  --color-text: #301e1b;
-  --color-text-muted: #76524b;
-  --color-border: #b8755e;
+  --color-brand: #d81f1f;
+  --color-brand-dark: #b01414;
+  --color-surface: #f3f3f3;
+  --color-card: #ffffff;
+  --color-card2: #f6f6f6;
+  --color-muted: #7d7d7d;
+  --color-text: #1b1b1b;
+  --color-text-muted: #7d7d7d;
+  --color-border: #e6e6e6;
 }
 
 html, body, #root {
   height: 100%;
   margin: 0;
   font-family: 'Outfit', sans-serif;
-  background: #303030;
-  color: #301e1b;
+  background: #2b2b2b;
+  color: #1b1b1b;
 }
 
 * {

@@ -89,10 +89,10 @@ function ProductImage({
   return (
     <div
       className={`w-full ${heights[size]} rounded-xl overflow-hidden relative`}
-      style={{ backgroundColor: product.imageBg }}
+      style={{ backgroundColor: product.homeImageBg }}
     >
       <img
-        src={product.image}
+        src={product.homeImage}
         alt={product.name}
         className="w-full h-full object-cover"
         style={{ objectPosition: product.imagePosition ?? "70% center" }}
@@ -410,14 +410,14 @@ function MenuScreen({
           >
             <div
               className="cursor-pointer w-full h-32 rounded-xl overflow-hidden active:scale-[0.98] transition-transform"
-              style={{ backgroundColor: product.imageBg }}
+              style={{ backgroundColor: product.homeImageBg }}
               onClick={() => onOpenProduct(product)}
             >
               <img
-                src={product.image}
+                src={product.homeImage}
                 alt={product.name}
-                className="w-full h-full object-contain bg-black"
-                style={{ objectPosition: "center" }}
+                className="w-full h-full object-cover"
+                style={{ objectPosition: product.imagePosition ?? "70% center" }}
               />
             </div>
             <div className="flex-1 min-w-0">
@@ -516,17 +516,16 @@ function ProductDetailScreen({
       {/* Large photo */}
       <div className="mx-5 mb-5">
         <div
-          className="w-full h-64 rounded-xl overflow-hidden"
-          style={{ backgroundColor: product.imageBg }}
+          className="w-full h-64 rounded-xl overflow-hidden flex items-center justify-center"
+          style={{ backgroundColor: "transparent" }}
         >
           <img
             src={product.image}
             alt={product.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
             style={{
-              objectPosition: "82% center",
-              transform: "translateX(-10%) scale(1.45)",
-              transformOrigin: "82% center",
+              objectPosition: "center",
+              transform: "scale(1.05)",
             }}
           />
         </div>
@@ -543,7 +542,7 @@ function ProductDetailScreen({
           </p>
           <p
             className="font-black text-xl ml-4"
-            style={{ color: theme.primary }}
+            style={{ color: theme.primaryDark }}
           >
             {product.price} DA
           </p>

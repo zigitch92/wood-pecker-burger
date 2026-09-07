@@ -507,9 +507,10 @@ function ProductDetailScreen({
   });
   const [preferences, setPreferences] = useState<Record<string, string>>({
     sauce: "avec",
+    sauceType: "algerienne",
     oignon: "avec",
     tomate: "avec",
-    epice: "non",
+    cuisson: "bien-cuite",
   });
   const supplementTotal =
     (supplements.kiri ? 50 : 0) +
@@ -606,7 +607,14 @@ function ProductDetailScreen({
             {/* Supplements avec prix */}
             {[
               { key: "kiri", label: "Supplément Kiri", price: 50 },
-              { key: "steak", label: "Supplément Steak", price: 100 },
+              {
+                key: "steak",
+                label:
+                  product.id === "burger-chicken"
+                    ? "Supplément Poulet"
+                    : "Supplément Steak",
+                price: 100,
+              },
               { key: "frites", label: "Supplément Barquette de Frites", price: 300 },
             ].map((opt) => (
               <div
@@ -650,7 +658,6 @@ function ProductDetailScreen({
 
             {/* Options Avec / Sans */}
             {[
-              { key: "sauce", label: "Choix de sauce" },
               { key: "oignon", label: "Oignon" },
               { key: "tomate", label: "Tomate" },
             ].map((opt) => (
@@ -691,31 +698,102 @@ function ProductDetailScreen({
               </div>
             ))}
 
-            {/* Niveau d'épice Oui / Non */}
+            {/* Choix de sauce */}
+            <div className="py-2.5 border-b" style={{ borderColor: theme.border }}>
+              <div className="flex items-center justify-between">
+                <p className="text-sm" style={{ color: theme.textMuted }}>
+                  Choix de sauce
+                </p>
+                <div className="flex gap-1.5">
+                  {["avec", "sans"].map((val) => (
+                    <button
+                      key={val}
+                      onClick={() =>
+                        setPreferences((prev) => ({ ...prev, sauce: val }))
+                      }
+                      className="px-3.5 py-1 rounded-lg text-xs font-bold capitalize transition-all active:scale-95"
+                      style={{
+                        backgroundColor:
+                          preferences.sauce === val ? theme.primary : "transparent",
+                        color: preferences.sauce === val ? "#fff" : theme.textMuted,
+                        border: `1px solid ${
+                          preferences.sauce === val ? theme.primary : theme.border
+                        }`,
+                      }}
+                    >
+                      {val}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {preferences.sauce === "avec" && (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {[
+                    { key: "algerienne", label: "Sauce Algérienne" },
+                    { key: "ail", label: "Sauce à l'ail" },
+                    { key: "piquante", label: "Sauce Piquante" },
+                  ].map((s) => (
+                    <button
+                      key={s.key}
+                      onClick={() =>
+                        setPreferences((prev) => ({ ...prev, sauceType: s.key }))
+                      }
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95"
+                      style={{
+                        backgroundColor:
+                          preferences.sauceType === s.key
+                            ? theme.primary
+                            : theme.card,
+                        color:
+                          preferences.sauceType === s.key ? "#fff" : theme.text,
+                        border: `1px solid ${
+                          preferences.sauceType === s.key
+                            ? theme.primary
+                            : theme.border
+                        }`,
+                      }}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Cuisson de la viande */}
             <div
               className="flex items-center justify-between py-2.5"
             >
               <p className="text-sm" style={{ color: theme.textMuted }}>
-                Niveau d'épice
+                Cuisson de la viande
               </p>
               <div className="flex gap-1.5">
-                {["oui", "non"].map((val) => (
+                {[
+                  { key: "bien-cuite", label: "Bien cuite" },
+                  { key: "mi-cuite", label: "Mi-cuite" },
+                ].map((opt) => (
                   <button
-                    key={val}
+                    key={opt.key}
                     onClick={() =>
-                      setPreferences((prev) => ({ ...prev, epice: val }))
+                      setPreferences((prev) => ({ ...prev, cuisson: opt.key }))
                     }
-                    className="px-3.5 py-1 rounded-lg text-xs font-bold capitalize transition-all active:scale-95"
+                    className="px-3.5 py-1 rounded-lg text-xs font-bold transition-all active:scale-95"
                     style={{
                       backgroundColor:
-                        preferences.epice === val ? theme.primary : "transparent",
-                      color: preferences.epice === val ? "#fff" : theme.textMuted,
+                        preferences.cuisson === opt.key
+                          ? theme.primary
+                          : "transparent",
+                      color:
+                        preferences.cuisson === opt.key ? "#fff" : theme.textMuted,
                       border: `1px solid ${
-                        preferences.epice === val ? theme.primary : theme.border
+                        preferences.cuisson === opt.key
+                          ? theme.primary
+                          : theme.border
                       }`,
                     }}
                   >
-                    {val}
+                    {opt.label}
                   </button>
                 ))}
               </div>

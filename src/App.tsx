@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/supabase";
 import { PRODUCTS, type Product, type Category } from "@/menu";
 import logo from "@/imports/logo.png.jpg";
-import couverture from "@/imports/couverture.png.jpeg";
+
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -256,23 +256,14 @@ function HomeScreen({
 
       {/* Hero Banner */}
       <div
-        className="mx-5 rounded-2xl mb-5 relative overflow-hidden"
-        style={{ backgroundColor: theme.card, minHeight: "125px" }}
+        className="mx-5 rounded-2xl mb-5 overflow-hidden"
+        style={{ backgroundColor: theme.card, height: "170px" }}
       >
         <img
-          src={couverture}
-          alt="Couverture Wood Pecker Burger"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ objectPosition: "center", opacity: 0.85 }}
+          src="/COVER.PNG.jpg"
+          alt="Wood Pecker Burger"
+          className="w-full h-full object-contain"
         />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(to top, rgba(20,12,10,0.72), rgba(20,12,10,0.04) 70%)",
-          }}
-        />
-
       </div>
 
       {/* Category Tabs */}
@@ -349,6 +340,17 @@ function HomeScreen({
         <span className="font-bold text-lg" style={{ color: theme.primary }}>
           →
         </span>
+      </div>
+
+      {/* Horaires d'ouverture */}
+      <div
+        className="mx-5 mt-4 mb-2 rounded-2xl py-3 px-4 flex items-center justify-center gap-2"
+        style={{ backgroundColor: theme.cardAlt }}
+      >
+        <span className="text-sm">🕐</span>
+        <p className="text-sm font-semibold" style={{ color: theme.text }}>
+          Horaires d'ouverture : 11h00 - Minuit
+        </p>
       </div>
     </div>
   );
@@ -488,6 +490,22 @@ function ProductDetailScreen({
 }) {
   const [qty, setQty] = useState(1);
   const theme = themeFor(product.category);
+  const [supplements, setSupplements] = useState<Record<string, boolean>>({
+    kiri: false,
+    steak: false,
+    frites: false,
+  });
+  const [preferences, setPreferences] = useState<Record<string, string>>({
+    sauce: "avec",
+    oignon: "avec",
+    tomate: "avec",
+    epice: "non",
+  });
+  const supplementTotal =
+    (supplements.kiri ? 50 : 0) +
+    (supplements.steak ? 100 : 0) +
+    (supplements.frites ? 300 : 0);
+  const unitPrice = product.price + supplementTotal;
 
   return (
     <div
@@ -510,7 +528,17 @@ function ProductDetailScreen({
 
       {/* Large photo */}
       <div className="mx-5 mb-5">
-        <ProductImage product={product} size="lg" />
+        <div
+          className="w-full h-64 rounded-xl overflow-hidden"
+          style={{ backgroundColor: product.imageBg }}
+        >
+          <img
+            src={product.image}
+            alt={product.name}
+            className="w-full h-full object-cover scale-125"
+            style={{ objectPosition: "center" }}
+          />
+        </div>
       </div>
 
       <div className="px-5">
@@ -549,7 +577,7 @@ function ProductDetailScreen({
           </p>
         </div>
 
-        {/* Customization placeholder (for future) */}
+        {/* Customization */}
         {product.category === "burgers" && (
           <div
             className="rounded-2xl p-4 mb-5 border"
@@ -561,33 +589,124 @@ function ProductDetailScreen({
             >
               Personnalisation
             </p>
+
+            {/* Supplements avec prix */}
             {[
-              "Supplément fromage",
-              "Supplément steak",
-              "Choix de sauce",
-              "Sans oignon",
-              "Sans tomate",
-              "Niveau épicé",
+              { key: "kiri", label: "Supplément Kiri", price: 50 },
+              { key: "steak", label: "Supplément Steak", price: 100 },
+              { key: "frites", label: "Supplément Barquette de Frites", price: 300 },
             ].map((opt) => (
               <div
-                key={opt}
-                className="flex items-center justify-between py-2 border-b last:border-0"
+                key={opt.key}
+                className="flex items-center justify-between py-2.5 border-b last:border-0"
+                style={{ borderColor: theme.border }}
+              >
+                <div className="flex items-center gap-2">
+                  <p className="text-sm" style={{ color: theme.textMuted }}>
+                    {opt.label}
+                  </p>
+                  <span
+                    className="text-xs font-bold"
+                    style={{ color: theme.primary }}
+                  >
+                    +{opt.price} DA
+                  </span>
+                </div>
+                <button
+                  onClick={() =>
+                    setSupplements((prev) => ({ ...prev, [opt.key]: !prev[opt.key] }))
+                  }
+                  className="w-11 h-6 rounded-full flex items-center transition-colors flex-shrink-0"
+                  style={{
+                    backgroundColor: supplements[opt.key]
+                      ? theme.primary
+                      : theme.border,
+                  }}
+                >
+                  <div
+                    className="w-5 h-5 rounded-full bg-white transition-transform"
+                    style={{
+                      transform: supplements[opt.key]
+                        ? "translateX(22px)"
+                        : "translateX(2px)",
+                    }}
+                  />
+                </button>
+              </div>
+            ))}
+
+            {/* Options Avec / Sans */}
+            {[
+              { key: "sauce", label: "Choix de sauce" },
+              { key: "oignon", label: "Oignon" },
+              { key: "tomate", label: "Tomate" },
+            ].map((opt) => (
+              <div
+                key={opt.key}
+                className="flex items-center justify-between py-2.5 border-b last:border-0"
                 style={{ borderColor: theme.border }}
               >
                 <p className="text-sm" style={{ color: theme.textMuted }}>
-                  {opt}
+                  {opt.label}
                 </p>
-                <span
-                  className="text-xs px-2 py-0.5 rounded-full border"
-                  style={{
-                    borderColor: theme.border,
-                    color: theme.textMuted,
-                  }}
-                >
-                  Bientôt
-                </span>
+                <div className="flex gap-1.5">
+                  {["avec", "sans"].map((val) => (
+                    <button
+                      key={val}
+                      onClick={() =>
+                        setPreferences((prev) => ({ ...prev, [opt.key]: val }))
+                      }
+                      className="px-3.5 py-1 rounded-lg text-xs font-bold capitalize transition-all active:scale-95"
+                      style={{
+                        backgroundColor:
+                          preferences[opt.key] === val
+                            ? theme.primary
+                            : "transparent",
+                        color:
+                          preferences[opt.key] === val ? "#fff" : theme.textMuted,
+                        border: `1px solid ${
+                          preferences[opt.key] === val
+                            ? theme.primary
+                            : theme.border
+                        }`,
+                      }}
+                    >
+                      {val}
+                    </button>
+                  ))}
+                </div>
               </div>
             ))}
+
+            {/* Niveau d'épice Oui / Non */}
+            <div
+              className="flex items-center justify-between py-2.5"
+            >
+              <p className="text-sm" style={{ color: theme.textMuted }}>
+                Niveau d'épice
+              </p>
+              <div className="flex gap-1.5">
+                {["oui", "non"].map((val) => (
+                  <button
+                    key={val}
+                    onClick={() =>
+                      setPreferences((prev) => ({ ...prev, epice: val }))
+                    }
+                    className="px-3.5 py-1 rounded-lg text-xs font-bold capitalize transition-all active:scale-95"
+                    style={{
+                      backgroundColor:
+                        preferences.epice === val ? theme.primary : "transparent",
+                      color: preferences.epice === val ? "#fff" : theme.textMuted,
+                      border: `1px solid ${
+                        preferences.epice === val ? theme.primary : theme.border
+                      }`,
+                    }}
+                  >
+                    {val}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
@@ -636,11 +755,11 @@ function ProductDetailScreen({
         }}
       >
         <button
-          onClick={() => onAddToCart(product, qty)}
+          onClick={() => onAddToCart({ ...product, price: unitPrice }, qty)}
           className="w-full py-4 rounded-2xl text-white font-bold text-base active:scale-[0.98] transition-transform"
           style={{ backgroundColor: theme.primary }}
         >
-          Ajouter au panier • {product.price * qty} DA
+          Ajouter au panier • {unitPrice * qty} DA
         </button>
       </div>
     </div>
@@ -909,24 +1028,22 @@ function CheckoutScreen({
           >
             Vos informations
           </p>
-          <div className="flex gap-3 mb-3">
-            <input
-              type="text"
-              placeholder="Nom"
-              value={nom}
-              onChange={(e) => setNom(e.target.value)}
-              className="flex-1 px-3 py-3 rounded-xl text-sm outline-none"
-              style={fieldStyle}
-            />
-            <input
-              type="text"
-              placeholder="Prénom"
-              value={prenom}
-              onChange={(e) => setPrenom(e.target.value)}
-              className="flex-1 px-3 py-3 rounded-xl text-sm outline-none"
-              style={fieldStyle}
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Nom"
+            value={nom}
+            onChange={(e) => setNom(e.target.value)}
+            className="w-full px-3 py-3 rounded-xl text-sm outline-none mb-3"
+            style={fieldStyle}
+          />
+          <input
+            type="text"
+            placeholder="Prénom"
+            value={prenom}
+            onChange={(e) => setPrenom(e.target.value)}
+            className="w-full px-3 py-3 rounded-xl text-sm outline-none mb-3"
+            style={fieldStyle}
+          />
           <input
             type="tel"
             placeholder="Numéro de téléphone"

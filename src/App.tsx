@@ -247,14 +247,14 @@ function HomeScreen({
       {/* Slogan */}
       <div className="px-5 mb-4 text-center">
         <p
-          className="font-black text-lg leading-tight"
+          className="text-xl leading-tight tracking-wide"
           style={{
+            fontFamily: "'Rye', serif",
             color: theme.text,
-            WebkitTextStroke: "0.35px rgba(255, 250, 242, 0.8)",
-            textShadow: "1px 2px 3px rgba(51, 37, 31, 0.28)",
+            textShadow: "1.5px 1.5px 0 #fff7df, 0 3px 5px rgba(51, 37, 31, 0.25)",
           }}
         >
-          "L'art du burger, la vitesse du fast."
+          L'art du burger, la vitesse du fast.
         </p>
       </div>
 
@@ -269,16 +269,6 @@ function HomeScreen({
           className="w-full h-full object-cover"
           style={{ objectPosition: "center" }}
         />
-        <div
-          className="absolute top-3 right-3 max-w-[45%] text-right"
-          style={{
-            fontFamily: "'Rye', serif",
-            color: "#fff7df",
-            textShadow: "2px 2px 0 #4a2114, 0 3px 6px rgba(0,0,0,0.45)",
-          }}
-        >
-          <p className="text-base leading-tight">Commandez en un seul click</p>
-        </div>
       </div>
 
       {/* Category Tabs */}
@@ -339,12 +329,14 @@ function HomeScreen({
 
       {/* Horaires d'ouverture */}
       <div
-        className="mx-5 mt-6 mb-2 rounded-2xl py-3 px-4 flex items-center justify-center gap-2"
-        style={{ backgroundColor: theme.cardAlt }}
+        className="mx-5 mt-6 mb-2 rounded-2xl py-3.5 px-4 flex items-center justify-center gap-2.5 shadow-md"
+        style={{
+          background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.primaryDark} 100%)`,
+        }}
       >
-        <span className="text-sm">🕐</span>
-        <p className="text-sm font-semibold" style={{ color: theme.text }}>
-          Horaires d'ouverture : 11h - Minuit
+        <span className="text-base">🕐</span>
+        <p className="text-sm font-bold tracking-wide" style={{ color: "#fffaf2" }}>
+          Ouvert de 11h00 jusqu'à Minuit
         </p>
       </div>
     </div>

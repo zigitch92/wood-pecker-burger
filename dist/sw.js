@@ -1,4 +1,4 @@
-const CACHE_NAME = "wood-pecker-v2";
+const CACHE_NAME = "wood-pecker-v3";
 const STATIC_ASSETS = ["/", "/index.html", "/manifest.webmanifest", "/logo.png"];
 
 self.addEventListener("install", (event) => {
@@ -25,10 +25,33 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+
+  const request = event.request;
+
+  // Network-first for navigation requests (HTML pages) so users always
+  // get the latest index.html with correct asset references.
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseClone);
+            });
+          }
+          return response;
+        })
+        .catch(() => caches.match(request).then((cached) => cached || caches.match("/index.html")))
+    );
+    return;
+  }
+
+  // Cache-first for other assets (images, JS, CSS, fonts).
   event.respondWith(
-    caches.match(event.request).then((cached) => {
+    caches.match(request).then((cached) => {
       if (cached) return cached;
-      return fetch(event.request)
+      return fetch(request)
         .then((response) => {
           if (
             !response ||
@@ -38,11 +61,11 @@ self.addEventListener("fetch", (event) => {
             return response;
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
+            cache.put(request, responseClone);
           });
           return response;
         })
-        .catch(() => caches.match("/index.html"));
+        .catch(() => caches.match("/index.html"))
     })
   );
 });

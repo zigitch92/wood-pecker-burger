@@ -2,6 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/supabase";
 import { PRODUCTS, type Product, type Category } from "@/menu";
 import logo from "@/imports/logo.png.jpg";
+import heroVideo from "@/imports/hero-video.mp4";
 
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -247,14 +248,14 @@ function HomeScreen({
       {/* Slogan */}
       <div className="px-5 mb-4 text-center">
         <p
-          className="text-xl leading-tight tracking-wide"
+          className="text-xl leading-snug"
           style={{
-            fontFamily: "'Rye', serif",
+            fontFamily: "'Fredoka', sans-serif",
+            fontWeight: 600,
             color: theme.text,
-            textShadow: "1.5px 1.5px 0 #fff7df, 0 3px 5px rgba(51, 37, 31, 0.25)",
           }}
         >
-          L'art du burger, la vitesse du fast.
+          T'as faim ? Commande, on s'occupe du reste
         </p>
       </div>
 
@@ -263,9 +264,12 @@ function HomeScreen({
         className="mx-5 rounded-2xl mb-5 relative overflow-hidden"
         style={{ backgroundColor: theme.card, height: "170px" }}
       >
-        <img
-          src="/Gemini_Generated_Image_y59vxdy59vxdy59v.jpg"
-          alt="Packaging Wood Pecker Burger, frites et boisson"
+        <video
+          src={heroVideo}
+          autoPlay
+          loop
+          muted
+          playsInline
           className="w-full h-full object-cover"
           style={{ objectPosition: "center" }}
         />
@@ -329,13 +333,16 @@ function HomeScreen({
 
       {/* Horaires d'ouverture */}
       <div
-        className="mx-5 mt-6 mb-2 rounded-2xl py-3.5 px-4 flex items-center justify-center gap-2.5 shadow-md"
-        style={{
-          background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.primaryDark} 100%)`,
-        }}
+        className="mx-5 mt-6 mb-2 rounded-full py-2.5 pl-2.5 pr-5 flex items-center justify-center gap-2.5 shadow-md border"
+        style={{ backgroundColor: "#ffffff", borderColor: theme.card2 }}
       >
-        <span className="text-base">🕐</span>
-        <p className="text-sm font-bold tracking-wide" style={{ color: "#fffaf2" }}>
+        <span
+          className="w-8 h-8 rounded-full flex items-center justify-center text-base flex-shrink-0"
+          style={{ backgroundColor: theme.card }}
+        >
+          🕐
+        </span>
+        <p className="text-sm font-bold tracking-wide" style={{ color: theme.text }}>
           Ouvert de 11h00 jusqu'à Minuit
         </p>
       </div>

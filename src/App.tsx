@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/supabase";
 import { PRODUCTS, type Product, type Category } from "@/menu";
 import logo from "@/imports/logo.png.jpg";
 import heroVideo from "@/imports/hero-video.mp4";
+
+const heroPhoto = "/Gemini_Generated_Image_y59vxdy59vxdy59v.jpg";
 
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -188,6 +190,14 @@ function HomeScreen({
   const [activeCategory, setActiveCategory] = useState<Category>("burgers");
   const theme = themeFor(activeCategory);
 
+  const [showVideo, setShowVideo] = useState(false);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShowVideo((v) => !v);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
   const burgers = PRODUCTS.filter((p) => p.category === "burgers");
   const drinks = PRODUCTS.filter((p) => p.category === "drinks");
 
@@ -264,14 +274,20 @@ function HomeScreen({
         className="mx-5 rounded-2xl mb-5 relative overflow-hidden"
         style={{ backgroundColor: theme.card, height: "170px" }}
       >
+        <img
+          src={heroPhoto}
+          alt="Packaging Wood Pecker Burger, frites et boisson"
+          className="w-full h-full object-cover absolute inset-0 transition-opacity duration-700"
+          style={{ objectPosition: "center", opacity: showVideo ? 0 : 1 }}
+        />
         <video
           src={heroVideo}
           autoPlay
           loop
           muted
           playsInline
-          className="w-full h-full object-cover"
-          style={{ objectPosition: "center" }}
+          className="w-full h-full object-cover absolute inset-0 transition-opacity duration-700"
+          style={{ objectPosition: "center", opacity: showVideo ? 1 : 0 }}
         />
       </div>
 

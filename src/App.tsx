@@ -5,6 +5,7 @@ import logo from "@/imports/logo.png.jpg";
 import heroVideo from "@/imports/hero-video.mp4";
 
 import bannerLifestyle from "@/imports/banner-lifestyle.png";
+import welcomeBg from "@/imports/welcome-bg.png";
 
 const heroPhoto = "/Gemini_Generated_Image_y59vxdy59vxdy59v.jpg";
 const bannerImages: { src: string; fit: "cover" | "contain" }[] = [
@@ -16,6 +17,7 @@ const bannerImages: { src: string; fit: "cover" | "contain" }[] = [
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Screen =
+  | "welcome"
   | "home"
   | "menu"
   | "cart"
@@ -1511,8 +1513,82 @@ function ConfirmationScreen({
 
 // ─── App Root ─────────────────────────────────────────────────────────────────
 
+// ─── Welcome Screen (apercu theme) ──────────────────────────────────────────
+
+function WelcomeScreen({ onStart }: { onStart: () => void }) {
+  const theme = BURGER_THEME;
+  return (
+    <div className="flex flex-col min-h-full relative overflow-hidden">
+      <img
+        src={welcomeBg}
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+
+      <div
+        className="rounded-b-[48px] flex flex-col items-center justify-center relative z-10"
+        style={{ background: theme.gradient, minHeight: "230px" }}
+      >
+        {/* Cercle logo vide */}
+        <div
+          className="w-20 h-20 rounded-full flex items-center justify-center absolute"
+          style={{
+            backgroundColor: "#ffffff",
+            bottom: "-40px",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+          }}
+        ></div>
+      </div>
+
+      <div className="flex-1 flex flex-col items-center pt-12 px-8 text-center relative z-10">
+        <div
+          className="rounded-3xl px-6 py-5 backdrop-blur-md border"
+          style={{
+            backgroundColor: "rgba(255,255,255,0.18)",
+            borderColor: "rgba(255,255,255,0.3)",
+          }}
+        >
+          <p
+            className="font-black text-2xl"
+            style={{ color: "#ffffff", textShadow: "0 2px 8px rgba(0,0,0,0.4)" }}
+          >
+            Bienvenue chez
+          </p>
+          <p
+            className="font-black text-2xl mb-2"
+            style={{ color: "#ffe082", textShadow: "0 2px 8px rgba(0,0,0,0.4)" }}
+          >
+            Wood Pecker Burger
+          </p>
+          <p
+            className="text-sm"
+            style={{ color: "#ffffff", textShadow: "0 1px 4px rgba(0,0,0,0.4)" }}
+          >
+            Texte de présentation ici.
+          </p>
+        </div>
+      </div>
+
+      {/* Logo burger vide en bas a gauche */}
+      <div className="px-6 pb-6 flex items-center justify-between relative z-10">
+        <div
+          className="w-12 h-12 rounded-full"
+          style={{ backgroundColor: theme.card, border: `1px solid ${theme.border}` }}
+        ></div>
+        <button
+          onClick={onStart}
+          className="px-8 py-3.5 rounded-full font-bold text-sm text-white active:scale-95 transition-transform shadow-lg"
+          style={{ backgroundColor: theme.primary }}
+        >
+          Commencer →
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
-  const [screen, setScreen] = useState<Screen>("home");
+  const [screen, setScreen] = useState<Screen>("welcome");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [prevScreen, setPrevScreen] = useState<Screen>("home");
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -1628,6 +1704,9 @@ export default function App() {
         className="w-full h-full overflow-y-auto"
         style={{ scrollbarWidth: "none" }}
       >
+        {screen === "welcome" && (
+          <WelcomeScreen onStart={() => setScreen("home")} />
+        )}
         {screen === "home" && (
           <HomeScreen
             onNav={goNav}

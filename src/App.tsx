@@ -1526,15 +1526,15 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
       />
 
       <div
-        className="rounded-b-[48px] flex flex-col items-center justify-center relative z-10"
-        style={{ background: theme.gradient, minHeight: "230px" }}
+        className="rounded-b-[40px] flex flex-col items-center justify-center relative z-10"
+        style={{ background: theme.gradient, minHeight: "120px" }}
       >
         {/* Cercle logo vide */}
         <div
-          className="w-20 h-20 rounded-full flex items-center justify-center absolute"
+          className="w-16 h-16 rounded-full flex items-center justify-center absolute"
           style={{
             backgroundColor: "#ffffff",
-            bottom: "-40px",
+            bottom: "-32px",
             boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
           }}
         ></div>

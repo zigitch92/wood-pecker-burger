@@ -5,13 +5,11 @@ import logo from "@/imports/logo.png.jpg";
 import heroVideo from "@/imports/hero-video.mp4";
 
 import bannerLifestyle from "@/imports/banner-lifestyle.png";
-import bannerCover from "@/imports/banner-cover.jpg";
 
 const heroPhoto = "/Gemini_Generated_Image_y59vxdy59vxdy59v.jpg";
 const bannerImages: { src: string; fit: "cover" | "contain" }[] = [
   { src: heroPhoto, fit: "cover" },
   { src: bannerLifestyle, fit: "cover" },
-  { src: bannerCover, fit: "contain" },
 ];
 
 
@@ -366,16 +364,16 @@ function HomeScreen({
 
       {/* Horaires d'ouverture */}
       <div
-        className="mx-5 mt-6 mb-2 rounded-full py-2.5 pl-2.5 pr-5 flex items-center justify-center gap-2.5 shadow-md border"
-        style={{ backgroundColor: "#fff8ef", borderColor: theme.border }}
+        className="mx-5 mt-6 mb-2 rounded-full py-2.5 pl-2.5 pr-5 flex items-center justify-center gap-2.5 shadow-md"
+        style={{ backgroundColor: theme.primary }}
       >
         <span
           className="w-8 h-8 rounded-full flex items-center justify-center text-base flex-shrink-0"
-          style={{ backgroundColor: theme.border }}
+          style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
         >
           🕐
         </span>
-        <p className="text-sm font-bold tracking-wide" style={{ color: theme.text }}>
+        <p className="text-sm font-bold tracking-wide" style={{ color: "#ffffff" }}>
           Ouvert de 11h00 jusqu'à Minuit
         </p>
       </div>
@@ -567,7 +565,7 @@ function ProductDetailScreen({
         <div className="mx-5">
           <div
             className="w-full h-64 rounded-xl overflow-hidden flex items-center justify-center"
-            style={{ backgroundColor: "#fff8ef" }}
+            style={{ backgroundColor: "transparent" }}
           >
             <img
               src={product.image}

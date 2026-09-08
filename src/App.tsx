@@ -216,11 +216,11 @@ function HomeScreen({
     >
       {/* Bloc rouge : header + slogan + banniere */}
       <div
-        className="rounded-b-[32px] pb-6"
+        className="rounded-[32px] mx-4 mt-20 pb-6 shadow-lg"
         style={{ background: theme.gradient }}
       >
         {/* Header */}
-        <div className="px-5 pt-12 pb-5 flex items-center justify-between">
+        <div className="px-5 pt-6 pb-5 flex items-center justify-between">
           <div
             className="flex items-center gap-3 pl-2 pr-4 py-1.5 rounded-2xl backdrop-blur-md border"
             style={{

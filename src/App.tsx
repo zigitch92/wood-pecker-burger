@@ -4,7 +4,15 @@ import { PRODUCTS, type Product, type Category } from "@/menu";
 import logo from "@/imports/logo.png.jpg";
 import heroVideo from "@/imports/hero-video.mp4";
 
+import bannerLifestyle from "@/imports/banner-lifestyle.png";
+import bannerCover from "@/imports/banner-cover.jpg";
+
 const heroPhoto = "/Gemini_Generated_Image_y59vxdy59vxdy59v.jpg";
+const bannerImages: { src: string; fit: "cover" | "contain" }[] = [
+  { src: heroPhoto, fit: "cover" },
+  { src: bannerLifestyle, fit: "cover" },
+  { src: bannerCover, fit: "contain" },
+];
 
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -46,29 +54,29 @@ interface Theme {
 }
 
 const BURGER_THEME: Theme = {
-  primary: "#c85a32",
-  primaryDark: "#a84435",
-  accent: "#e8a838",
-  gradient: "linear-gradient(135deg, #d4b17d 0%, #a84435 100%)",
-  card: "#f8ecd8",
-  cardAlt: "#fffaf2",
-  text: "#33251f",
-  textMuted: "#8b7768",
-  border: "#e3d5c3",
-  headerBg: "#f8ecd8",
+  primary: "#cc0000",
+  primaryDark: "#a10000",
+  accent: "#ffffff",
+  gradient: "linear-gradient(135deg, #e01414 0%, #a10000 100%)",
+  card: "#fff8ef",
+  cardAlt: "#fff8ef",
+  text: "#1a1a1a",
+  textMuted: "#7a7a7a",
+  border: "#f0d0d0",
+  headerBg: "#fff8ef",
 };
 
 const COCKTAIL_THEME: Theme = {
-  primary: "#2d7a4f",
-  primaryDark: "#1f5e3a",
-  accent: "#d4b838",
-  gradient: "linear-gradient(135deg, #c5d99a 0%, #2d7a4f 100%)",
-  card: "#e8f0d8",
-  cardAlt: "#f4f8e8",
-  text: "#1a3320",
-  textMuted: "#5a7a62",
-  border: "#c5d9b0",
-  headerBg: "#e8f0d8",
+  primary: "#cc0000",
+  primaryDark: "#a10000",
+  accent: "#ffffff",
+  gradient: "linear-gradient(135deg, #e01414 0%, #a10000 100%)",
+  card: "#fff8ef",
+  cardAlt: "#fff8ef",
+  text: "#1a1a1a",
+  textMuted: "#7a7a7a",
+  border: "#f0d0d0",
+  headerBg: "#fff8ef",
 };
 
 function themeFor(category: Category): Theme {
@@ -91,8 +99,8 @@ function ProductImage({
   };
   return (
     <div
-      className={`w-full ${heights[size]} rounded-xl overflow-hidden relative`}
-      style={{ backgroundColor: product.homeImageBg }}
+      className={`w-full ${heights[size]} rounded-xl overflow-hidden relative border`}
+      style={{ backgroundColor: product.homeImageBg, borderColor: "rgba(0,0,0,0.08)" }}
     >
       <img
         src={product.homeImage}
@@ -123,8 +131,8 @@ function ProductCard({
 }) {
   return (
     <div
-      className="rounded-2xl overflow-hidden flex-shrink-0"
-      style={{ backgroundColor: theme.card, width: "220px" }}
+      className="rounded-2xl overflow-hidden flex-shrink-0 border shadow-sm"
+      style={{ backgroundColor: theme.card, width: "220px", borderColor: theme.border }}
     >
       <div className="relative cursor-pointer" onClick={onOpen}>
         <ProductImage product={product} size="md" />
@@ -187,17 +195,15 @@ function HomeScreen({
   onToggleFav: (id: string) => void;
 }) {
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
-  const [activeCategory, setActiveCategory] = useState<Category>("burgers");
-  const theme = themeFor(activeCategory);
-
-  const [showVideo, setShowVideo] = useState(false);
+  const [bannerIndex, setBannerIndex] = useState(0);
   useEffect(() => {
     const interval = setInterval(() => {
-      setShowVideo((v) => !v);
-    }, 4000);
+      setBannerIndex((i) => (i + 1) % bannerImages.length);
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
-
+  const [activeCategory, setActiveCategory] = useState<Category>("burgers");
+  const theme = themeFor(activeCategory);
   const burgers = PRODUCTS.filter((p) => p.category === "burgers");
   const drinks = PRODUCTS.filter((p) => p.category === "drinks");
 
@@ -206,111 +212,122 @@ function HomeScreen({
   return (
     <div
       className="flex flex-col min-h-full pb-6"
-      style={{ background: theme.gradient }}
+      style={{ backgroundColor: "#fff8ef" }}
     >
-      {/* Header */}
-      <div className="px-5 pt-12 pb-5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div
-            className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
-            style={{ backgroundColor: theme.headerBg }}
-          >
-            <img
-              src={logo}
-              alt="Wood Pecker Burger"
-              className="w-full h-full object-contain object-center rounded-full"
-            />
-          </div>
-          <div>
-            <p
-              className="font-black text-base tracking-wider leading-none"
-              style={{ color: theme.text }}
-            >
-              WOOD PECKER
-            </p>
-            <p
-              className="text-[10px] tracking-widest"
-              style={{ color: theme.primary }}
-            >
-              BURGER
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            className="w-9 h-9 rounded-xl flex items-center justify-center relative active:scale-90 transition-transform"
-            style={{ backgroundColor: theme.headerBg }}
-            onClick={() => onNav("cart")}
-          >
-            <span className="text-base">🛒</span>
-            {cartCount > 0 && (
-              <span
-                className="absolute -top-1 -right-1 text-[9px] font-black text-white rounded-full w-4 h-4 flex items-center justify-center"
-                style={{ backgroundColor: theme.primary }}
-              >
-                {cartCount}
-              </span>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Slogan */}
-      <div className="px-5 mb-4 text-center">
-        <p
-          className="text-xl leading-snug"
-          style={{
-            fontFamily: "'Fredoka', sans-serif",
-            fontWeight: 600,
-            color: theme.text,
-          }}
-        >
-          T'as faim ? Commande, on s'occupe du reste
-        </p>
-      </div>
-
-      {/* Hero Banner */}
+      {/* Bloc rouge : header + slogan + banniere */}
       <div
-        className="mx-5 rounded-2xl mb-5 relative overflow-hidden"
-        style={{ backgroundColor: theme.card, height: "170px" }}
+        className="rounded-b-[32px] pb-6"
+        style={{ background: theme.gradient }}
       >
-        <img
-          src={heroPhoto}
-          alt="Packaging Wood Pecker Burger, frites et boisson"
-          className="w-full h-full object-cover absolute inset-0 transition-opacity duration-700"
-          style={{ objectPosition: "center", opacity: showVideo ? 0 : 1 }}
-        />
-        <video
-          src={heroVideo}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-full object-cover absolute inset-0 transition-opacity duration-700"
-          style={{ objectPosition: "center", opacity: showVideo ? 1 : 0 }}
-        />
+        {/* Header */}
+        <div className="px-5 pt-12 pb-5 flex items-center justify-between">
+          <div
+            className="flex items-center gap-3 pl-2 pr-4 py-1.5 rounded-2xl backdrop-blur-md border"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.15)",
+              borderColor: "rgba(255,255,255,0.25)",
+            }}
+          >
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
+              style={{ backgroundColor: "#fff8ef" }}
+            >
+              <img
+                src={logo}
+                alt="Wood Pecker Burger"
+                className="w-full h-full object-contain object-center rounded-full"
+              />
+            </div>
+            <div>
+              <p
+                className="font-black text-base tracking-wider leading-none"
+                style={{ color: "#ffffff" }}
+              >
+                WOOD PECKER
+              </p>
+              <p
+                className="text-[10px] tracking-widest"
+                style={{ color: "#ffe5e5" }}
+              >
+                BURGER
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              className="w-9 h-9 rounded-xl flex items-center justify-center relative active:scale-90 transition-transform"
+              style={{ backgroundColor: "#fff8ef" }}
+              onClick={() => onNav("cart")}
+            >
+              <span className="text-base">🛒</span>
+              {cartCount > 0 && (
+                <span
+                  className="absolute -top-1 -right-1 text-[9px] font-black text-white rounded-full w-4 h-4 flex items-center justify-center"
+                  style={{ backgroundColor: theme.primaryDark }}
+                >
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Slogan */}
+        <div className="px-5 mb-4 text-center">
+          <p
+            className="text-xl leading-snug"
+            style={{
+              fontFamily: "'Fredoka', sans-serif",
+              fontWeight: 600,
+              color: "#ffffff",
+            }}
+          >
+            T'as faim ? Commande, on s'occupe du reste
+          </p>
+        </div>
+
+        {/* Hero Banner - carrousel auto (3s) */}
+        <div
+          className="mx-5 rounded-2xl relative overflow-hidden"
+          style={{ backgroundColor: "#fff8ef", height: "170px" }}
+        >
+          {bannerImages.map((b, i) => (
+            <img
+              key={b.src}
+              src={b.src}
+              alt="Wood Pecker Burger"
+              className={`w-full h-full object-${b.fit} absolute inset-0 transition-transform duration-700 ease-in-out`}
+              style={{
+                objectPosition: "center",
+                transform: `translateX(${(i - bannerIndex) * 100}%)`,
+              }}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Category Tabs */}
-      <div className="mx-5 mb-5 flex gap-3">
+      <div className="mx-5 mt-5 mb-5 flex gap-3">
         <button
           onClick={() => setActiveCategory("burgers")}
-          className="min-w-0 flex-1 flex items-center justify-center gap-1 py-3.5 rounded-2xl font-bold text-xs transition-all active:scale-95"
+          className="min-w-0 flex-1 flex items-center justify-center gap-1 py-3.5 rounded-2xl font-bold text-xs transition-all active:scale-95 border"
           style={{
             backgroundColor:
-              activeCategory === "burgers" ? theme.primary : theme.card,
+              activeCategory === "burgers" ? theme.primary : "#ffffff",
             color: activeCategory === "burgers" ? "#fff" : theme.textMuted,
+            borderColor: activeCategory === "burgers" ? theme.primary : theme.border,
           }}
         >
           🍔 <span>NOS BURGERS</span>
         </button>
         <button
           onClick={() => setActiveCategory("drinks")}
-          className="min-w-0 flex-1 flex items-center justify-center gap-1 py-3.5 rounded-2xl font-bold text-xs transition-all active:scale-95"
+          className="min-w-0 flex-1 flex items-center justify-center gap-1 py-3.5 rounded-2xl font-bold text-xs transition-all active:scale-95 border"
           style={{
             backgroundColor:
-              activeCategory === "drinks" ? theme.primary : theme.card,
+              activeCategory === "drinks" ? theme.primary : "#ffffff",
             color: activeCategory === "drinks" ? "#fff" : theme.textMuted,
+            borderColor: activeCategory === "drinks" ? theme.primary : theme.border,
           }}
         >
           🥤 <span>NOS COCKTAILS</span>
@@ -350,11 +367,11 @@ function HomeScreen({
       {/* Horaires d'ouverture */}
       <div
         className="mx-5 mt-6 mb-2 rounded-full py-2.5 pl-2.5 pr-5 flex items-center justify-center gap-2.5 shadow-md border"
-        style={{ backgroundColor: "#ffffff", borderColor: theme.card2 }}
+        style={{ backgroundColor: "#fff8ef", borderColor: theme.border }}
       >
         <span
           className="w-8 h-8 rounded-full flex items-center justify-center text-base flex-shrink-0"
-          style={{ backgroundColor: theme.card }}
+          style={{ backgroundColor: theme.border }}
         >
           🕐
         </span>
@@ -386,54 +403,59 @@ function MenuScreen({
   return (
     <div
       className="flex flex-col min-h-full pb-6"
-      style={{ background: theme.gradient }}
+      style={{ backgroundColor: "#fff8ef" }}
     >
-      <div className="px-5 pt-12 pb-5">
-        <p className="font-black text-2xl" style={{ color: theme.text }}>
-          {activeCategory === "burgers" ? "Nos Burgers" : "Nos Cocktails"}
-        </p>
-        <p className="text-sm mt-1" style={{ color: theme.textMuted }}>
-          {activeCategory === "burgers"
-            ? "L'art du burger"
-            : "Fraîcheur et saveurs"}
-        </p>
-      </div>
-
-      {/* Tabs */}
       <div
-        className="mx-5 mb-6 p-1 rounded-2xl flex"
-        style={{ backgroundColor: theme.card }}
+        className="rounded-b-[32px] pb-6"
+        style={{ background: theme.gradient }}
       >
-        {(["burgers", "drinks"] as Category[]).map((cat) => {
-          const catTheme = themeFor(cat);
-          return (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className="flex-1 py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95"
-              style={{
-                backgroundColor:
-                  activeCategory === cat ? catTheme.primary : "transparent",
-                color: activeCategory === cat ? "#fff" : theme.textMuted,
-              }}
-            >
-              {cat === "burgers" ? "🍔 Burgers" : "🥤 Cocktails"}
-            </button>
-          );
-        })}
+        <div className="px-5 pt-12 pb-5">
+          <p className="font-black text-2xl" style={{ color: "#ffffff" }}>
+            {activeCategory === "burgers" ? "Nos Burgers" : "Nos Cocktails"}
+          </p>
+          <p className="text-sm mt-1" style={{ color: "#ffe5e5" }}>
+            {activeCategory === "burgers"
+              ? "L'art du burger"
+              : "Fraîcheur et saveurs"}
+          </p>
+        </div>
+
+        {/* Tabs */}
+        <div
+          className="mx-5 p-1 rounded-2xl flex"
+          style={{ backgroundColor: "#fff8ef" }}
+        >
+          {(["burgers", "drinks"] as Category[]).map((cat) => {
+            const catTheme = themeFor(cat);
+            return (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className="flex-1 py-2.5 rounded-xl font-bold text-sm transition-all active:scale-95"
+                style={{
+                  backgroundColor:
+                    activeCategory === cat ? catTheme.primary : "transparent",
+                  color: activeCategory === cat ? "#fff" : theme.textMuted,
+                }}
+              >
+                {cat === "burgers" ? "🍔 Burgers" : "🥤 Cocktails"}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Product List */}
-      <div className="px-5 flex flex-col gap-4">
+      <div className="px-5 mt-6 flex flex-col gap-4">
         {filtered.map((product) => (
           <div
             key={product.id}
-            className="rounded-2xl overflow-hidden flex flex-col gap-3 p-3"
-            style={{ backgroundColor: theme.card }}
+            className="rounded-2xl overflow-hidden flex flex-col gap-3 p-3 border shadow-sm"
+            style={{ backgroundColor: theme.card, borderColor: theme.border }}
           >
             <div
-              className="cursor-pointer w-full h-32 rounded-xl overflow-hidden active:scale-[0.98] transition-transform"
-              style={{ backgroundColor: product.homeImageBg }}
+              className="cursor-pointer w-full h-32 rounded-xl overflow-hidden active:scale-[0.98] transition-transform border"
+              style={{ backgroundColor: product.homeImageBg, borderColor: "rgba(0,0,0,0.08)" }}
               onClick={() => onOpenProduct(product)}
             >
               <img
@@ -521,41 +543,46 @@ function ProductDetailScreen({
   return (
     <div
       className="flex flex-col min-h-full pb-24"
-      style={{ background: theme.gradient }}
+      style={{ backgroundColor: "#fff8ef" }}
     >
-      {/* Back button */}
-      <div className="px-5 pt-12 pb-4 flex items-center gap-3">
-        <button
-          onClick={onBack}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-          style={{ backgroundColor: theme.card }}
-        >
-          <span style={{ color: theme.text }}>←</span>
-        </button>
-        <p className="font-bold text-base" style={{ color: theme.text }}>
-          Détail du produit
-        </p>
-      </div>
+      <div
+        className="rounded-b-[32px] pb-5"
+        style={{ background: theme.gradient }}
+      >
+        {/* Back button */}
+        <div className="px-5 pt-12 pb-4 flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
+            style={{ backgroundColor: "#fff8ef" }}
+          >
+            <span style={{ color: theme.text }}>←</span>
+          </button>
+          <p className="font-bold text-base" style={{ color: "#ffffff" }}>
+            Détail du produit
+          </p>
+        </div>
 
-      {/* Large photo */}
-      <div className="mx-5 mb-5">
-        <div
-          className="w-full h-64 rounded-xl overflow-hidden flex items-center justify-center"
-          style={{ backgroundColor: "transparent" }}
-        >
-          <img
-            src={product.image}
-            alt={product.name}
-            className="w-full h-full object-contain"
-            style={{
-              objectPosition: "center",
-              transform: "scale(1.05)",
-            }}
-          />
+        {/* Large photo */}
+        <div className="mx-5">
+          <div
+            className="w-full h-64 rounded-xl overflow-hidden flex items-center justify-center"
+            style={{ backgroundColor: "#fff8ef" }}
+          >
+            <img
+              src={product.image}
+              alt={product.name}
+              className="w-full h-full object-contain"
+              style={{
+                objectPosition: "center",
+                transform: "scale(1.05)",
+              }}
+            />
+          </div>
         </div>
       </div>
 
-      <div className="px-5">
+      <div className="px-5 mt-5">
         {/* Name + Price */}
         <div className="flex items-start justify-between mb-3">
           <p
@@ -566,7 +593,7 @@ function ProductDetailScreen({
           </p>
           <p
             className="font-black text-xl ml-4"
-            style={{ color: theme.primaryDark }}
+            style={{ color: theme.primary }}
           >
             {product.price} DA
           </p>
@@ -839,15 +866,15 @@ function ProductDetailScreen({
 
       {/* Add to cart button */}
       <div
-        className="absolute bottom-0 left-0 right-0 px-5 pb-8 pt-4"
+        className="absolute bottom-0 left-0 right-0 px-5 pb-8 pt-4 backdrop-blur-md border-t"
         style={{
-          background: theme.gradient,
-          borderTop: `1px solid ${theme.border}`,
+          backgroundColor: "rgba(255,248,239,0.6)",
+          borderColor: "rgba(255,255,255,0.4)",
         }}
       >
         <button
           onClick={() => onAddToCart({ ...product, price: unitPrice }, qty)}
-          className="w-full py-4 rounded-2xl text-white font-bold text-base active:scale-[0.98] transition-transform"
+          className="w-full py-4 rounded-2xl text-white font-bold text-base active:scale-[0.98] transition-transform shadow-lg"
           style={{ backgroundColor: theme.primary }}
         >
           Ajouter au panier • {unitPrice * qty} DA
@@ -880,25 +907,30 @@ function CartScreen({
   return (
     <div
       className="flex flex-col min-h-full pb-6"
-      style={{ background: theme.gradient }}
+      style={{ backgroundColor: "#fff8ef" }}
     >
-      <div className="px-5 pt-12 pb-5 flex items-center gap-3">
-        <button
-          onClick={onBack}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-          style={{ backgroundColor: theme.cardAlt }}
-        >
-          <span style={{ color: theme.text }}>←</span>
-        </button>
-        <div>
-          <p className="font-black text-2xl" style={{ color: theme.text }}>
-            Mon Panier
-          </p>
-          <p className="text-sm mt-0.5" style={{ color: theme.textMuted }}>
-            {cart.length === 0
-              ? "Votre panier est vide"
-              : `${cart.reduce((s, i) => s + i.quantity, 0)} article(s)`}
-          </p>
+      <div
+        className="rounded-b-[32px] pb-5"
+        style={{ background: theme.gradient }}
+      >
+        <div className="px-5 pt-12 pb-1 flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
+            style={{ backgroundColor: "#fff8ef" }}
+          >
+            <span style={{ color: theme.text }}>←</span>
+          </button>
+          <div>
+            <p className="font-black text-2xl" style={{ color: "#ffffff" }}>
+              Mon Panier
+            </p>
+            <p className="text-sm mt-0.5" style={{ color: "#ffe5e5" }}>
+              {cart.length === 0
+                ? "Votre panier est vide"
+                : `${cart.reduce((s, i) => s + i.quantity, 0)} article(s)`}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -913,24 +945,22 @@ function CartScreen({
         </div>
       ) : (
         <>
-          <div className="px-5 flex flex-col gap-3">
+          <div className="px-5 mt-5 flex flex-col gap-3">
             {cart.map((item) => (
               <div
                 key={item.product.id}
-                className="rounded-2xl p-3 flex items-center gap-3"
-                style={{ backgroundColor: theme.cardAlt }}
+                className="rounded-2xl p-3 flex items-center gap-3 border shadow-sm"
+                style={{ backgroundColor: theme.cardAlt, borderColor: theme.border }}
               >
                 <div
-                  className="w-16 h-16 rounded-xl flex-shrink-0 overflow-hidden"
-                  style={{ backgroundColor: item.product.imageBg }}
+                  className="w-16 h-16 rounded-xl flex-shrink-0 overflow-hidden border flex items-center justify-center"
+                  style={{ backgroundColor: item.product.imageBg, borderColor: "rgba(0,0,0,0.08)" }}
                 >
                   <img
                     src={item.product.image}
                     alt={item.product.name}
-                    className="w-full h-full object-cover"
-                    style={{
-                      objectPosition: item.product.imagePosition ?? "70% center",
-                    }}
+                    className="w-full h-full object-contain"
+                    style={{ objectPosition: "center", transform: "scale(1.05)" }}
                   />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -1095,24 +1125,29 @@ function CheckoutScreen({
   return (
     <div
       className="flex flex-col min-h-full pb-28"
-      style={{ background: theme.gradient }}
+      style={{ backgroundColor: "#fff8ef" }}
     >
-      <div className="px-5 pt-12 pb-5 flex items-center gap-3">
-        <button
-          onClick={onBack}
-          className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
-          style={{ backgroundColor: theme.cardAlt }}
-        >
-          <span style={{ color: theme.text }}>←</span>
-        </button>
-        <p className="font-black text-2xl" style={{ color: theme.text }}>
-          Commander
-        </p>
+      <div
+        className="rounded-b-[32px] pb-5"
+        style={{ background: theme.gradient }}
+      >
+        <div className="px-5 pt-12 pb-1 flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
+            style={{ backgroundColor: "#fff8ef" }}
+          >
+            <span style={{ color: theme.text }}>←</span>
+          </button>
+          <p className="font-black text-2xl" style={{ color: "#ffffff" }}>
+            Commander
+          </p>
+        </div>
       </div>
 
-      <div className="px-5 flex flex-col gap-5">
+      <div className="px-5 mt-5 flex flex-col gap-5">
         {/* Customer info */}
-        <div className="rounded-2xl p-4" style={{ backgroundColor: theme.cardAlt }}>
+        <div className="rounded-2xl p-4 border shadow-sm" style={{ backgroundColor: theme.cardAlt, borderColor: theme.border }}>
           <p
             className="text-xs font-bold tracking-widest uppercase mb-4"
             style={{ color: theme.primary }}
@@ -1318,12 +1353,34 @@ function ConfirmationScreen({
   const theme = BURGER_THEME;
   const steps = ["Commande reçue", "Préparation", "En livraison", "Livrée"];
   const currentStep = 1;
+  const [showVideo, setShowVideo] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowVideo(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div
       className="flex flex-col min-h-full pb-24"
       style={{ background: theme.gradient }}
     >
+      {showVideo && (
+        <div
+          className="mx-5 mt-5 rounded-2xl overflow-hidden"
+          style={{ height: "170px" }}
+        >
+          <video
+            src={heroVideo}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+            style={{ objectPosition: "center" }}
+          />
+        </div>
+      )}
       <div className="px-5 pt-12 pb-8 text-center">
         <div
           className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
